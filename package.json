@@ -1,15 +1,15 @@
 {
   "name": "neon",
   "version": "0.0.1",
-  "description": "NEONは作者のコンピュータが資金不足から時代遅れになり、ウェブページのロードが日増しに遅くなりさらにはWEBページに広告が溢れていく現代の状況に鑑み。状況を打破するために制作しようとしている超高速ロード・タイムを目指したウェブページ制作ソフトです。実際には2000年の自作HP製作時代への巻き戻しになります。製作者は超高速ウェブページを制作できる代わりに、閲覧者は２０年前へタイムスリップしたかのようなエクスペリエンスを実感できます。",
+  "description": "Fast html builder.",
   "main": "src/builder.js",
   "bin": {
     "neon": "src/builder.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node src/builder.js demo",
-    "clean": "rm -rf ./*.htm ./dist"
+    "demo-build": "node src/builder.js demo/site.json",
+    "demo-clean": "rm -rf ./demo/*.htm"
   },
   "author": "Hideto Manjo",
   "license": "MIT",
@@ -23,6 +23,7 @@
     "markdown-it-emoji": "^1.4.0",
     "markdown-it-footnote": "^3.0.1",
     "markdown-it-highlightjs": "^3.0.0",
+    "markdown-it-imsize": "^2.0.1",
     "markdown-it-ins": "^2.0.0",
     "markdown-it-mark": "^2.0.0",
     "markdown-it-sub": "^1.0.0",
