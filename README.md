@@ -11,11 +11,15 @@ NEONは作者のコンピュータが時代遅れになり、ウェブページ�
 HPは手書きのhtmlを書く代わりにgithubやQiitaのようなマークアップ言語で記述します。
 
 # インストール
+
 ```bash
 git clone --depth=1 https://github.com/hotstaff/neon.git
+cd neon
 npm install
 ```
+
 # デモページのビルド
+
 ```
 npm run demo-build
 ```
