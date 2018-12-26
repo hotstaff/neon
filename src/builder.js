@@ -59,23 +59,33 @@ o88o    88  o888ooo8888  88ooo88  o88o    88
 // Defined at parsing time.
 function isExistFile(file) {
     var stat;
+
     try {
         stat = fs.statSync(file);
-        if (stat.isDirectory()){
-            return false;
-        }
     } catch (err) {
         if (err.code === 'ENOENT') {
             return false;
         }
         return null;
     }
+
+    if (stat.isFile() === false){
+        return false;
+    }
     return true;
 }
 
 
 function isExistDir(dirname, creation=true) {
-    if (fs.existsSync(dirname) && fs.statSync(dirname).isDirectory() === false) {
+    var stat;
+
+    try {
+        stat = fs.statSync(dirname);
+    } catch(err) {
+        return false;
+    }
+
+    if(stat.isDirectory() === false){
         return false;
     }
 
