@@ -63,10 +63,7 @@ function isExistFile(file) {
     try {
         stat = fs.statSync(file);
     } catch (err) {
-        if (err.code === 'ENOENT') {
-            return false;
-        }
-        return null;
+        return false;
     }
 
     if (stat.isFile() === false){
