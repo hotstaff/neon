@@ -10,7 +10,7 @@
 // time variable
 var start_time;
 
-/* Define */
+/* Defines */
 var SITE_JSON_NAME;
 var SITE_JSON;
 var SOURCE_DIR;
@@ -58,31 +58,40 @@ o88o    88  o888ooo8888  88ooo88  o88o    88
 // Common function
 // Defined at parsing time.
 function isExistFile(file) {
+    var stat;
     try {
-        fs.statSync(file);
-        return true;
+        stat = fs.statSync(file);
+        if (stat.isDirectory()){
+            return false;
+        }
     } catch (err) {
         if (err.code === 'ENOENT') {
             return false;
         }
         return null;
     }
-}
-
-function isExistDir(dirname) {
-    if (fs.existsSync(dirname) && fs.statSync(dirname).isDirectory() === false) {
-        return false;
-    }
-    fs.access(dirname, fs.constants.R_OK | fs.constants.W_OK, function (error) {
-        if (error) {
-            if (error.code === "ENOENT") {
-                fs.mkdirSync(dirname);
-            }
-        }
-    });
     return true;
 }
 
+
+function isExistDir(dirname, creation=true) {
+    if (fs.existsSync(dirname) && fs.statSync(dirname).isDirectory() === false) {
+        return false;
+    }
+
+    if (creation) {
+        try{
+            fs.accessSync(dirname, fs.constants.R_OK | fs.constants.W_OK);
+        }catch(error) {
+            if (error.code === "ENOENT") {
+                fs.mkdirSync(dirname);
+                return true;
+            }
+            return false;
+        }    
+    }
+    return true;
+}
 /* Common function end */
 
 /* Define */
@@ -103,6 +112,7 @@ if (isExistFile(SITE_JSON_NAME) === false) {
     SITE_JSON_NAME = path.resolve(SITE_JSON_NAME, "./site.json");
 }
 
+
 try{
     SITE_JSON = JSON.parse(fs.readFileSync(SITE_JSON_NAME, 'utf8'));    
 } catch(e) {
@@ -117,12 +127,11 @@ DEST_DIR =  path.resolve(SOURCE_DIR, SITE_JSON.dest || "./") ;
 
 // dest dir check
 if (isExistDir(DEST_DIR) === false) {
-    console.log("Dest filename already exists. (" + DEST_DIR +")");
+    console.log(`Dest filename already exists. (${DEST_DIR})`);
     process.exit(1);
 }
-
-console.log("Source directory: " + SOURCE_DIR);
-console.log("Dest directory: " + DEST_DIR);
+console.log(`Source directory: ${SOURCE_DIR}`);
+console.log(`Dest directory: ${DEST_DIR}`);
 
 // START UP CHECK END
 
