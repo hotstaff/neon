@@ -55,8 +55,8 @@ o88o    88  o888ooo8888  88ooo88  o88o    88
 `);
 
 
-// Common function
-// Defined at parsing time.
+/* Common function
+    Defined at parsing time. */
 function isExistFile(file) {
     var stat;
 
@@ -101,7 +101,7 @@ function isExistDir(dirname, creation=true) {
 }
 /* Common function end */
 
-/* Define */
+/* START UP CHECK START */
 if (process.argv.length < 3) {
     console.log("Please input site.json.");
     process.exit(1);
@@ -110,7 +110,7 @@ if (process.argv.length < 3) {
 SITE_JSON_NAME = path.resolve(process.argv[2]);
 SITE_JSON = {};
 
-// Read SITE.json
+/* Read SITE.json */
 if (isExistFile(SITE_JSON_NAME) === false) {
     if (isExistDir(SITE_JSON_NAME) === false) {
         console.log("Not Found (site.json) input filename ->" + SITE_JSON_NAME);
@@ -128,21 +128,20 @@ try{
     process.exit(1);
 }
 
-// common configuration
+/* Common configuration */
 SOURCE_DIR = path.dirname(SITE_JSON_NAME);
 DEST_DIR =  path.resolve(SOURCE_DIR, SITE_JSON.dest || "./") ;
 
-// dest dir check
+/* Dest dir check */
 if (isExistDir(DEST_DIR) === false) {
     console.log(`Dest filename already exists. (${DEST_DIR})`);
     process.exit(1);
 }
 console.log(`Source directory: ${SOURCE_DIR}`);
 console.log(`Dest directory: ${DEST_DIR}`);
+/* START UP CHECK END */
 
-// START UP CHECK END
-
-// TEMPLETE START
+/* TEMPLETE START */
 /* html templete builder 
    these code shuld more smart.*/
 var construct_index_html = function construct_index_html(index_json) {
@@ -223,10 +222,10 @@ var obtain_markdown_files = function obtain_markdown_files (dirname) {
         });
     });
 }
-// TEMPLETE END
+/* TEMPLETE END */
 
 
-// MAIN FUNCTION STARTS
+/* MAIN FUNCTION STARTS */
 var construct_index_json = function construct_index_json (md_files) {
     return new Promise(function(onFulfilled, onRejected) {
         var index_json = {
@@ -267,7 +266,9 @@ var write_html = function write_html(fname, html_text) {
     });
 }
 
-/* main sequence */
+/* MAIN FUNCTION END */
+
+/* Main sequence */
 var build_all = function build_all(){
     start_time = Date.now();
     Promise.resolve()
