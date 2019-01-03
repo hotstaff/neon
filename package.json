@@ -24,7 +24,7 @@
     "markdown-it-highlightjs": "^3.0.0",
     "markdown-it-imsize": "^2.0.1",
     "markdown-it-ins": "^2.0.0",
-    "markdown-it-link-target": "^1.0.2",
+    "markdown-it-link-attributes": "^2.1.0",
     "markdown-it-mark": "^2.0.0",
     "markdown-it-sub": "^1.0.0",
     "markdown-it-sup": "^1.0.0",
