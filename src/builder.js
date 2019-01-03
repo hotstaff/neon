@@ -40,8 +40,8 @@ MD.use(require('markdown-it-title'))
     .use(require('markdown-it-sup'))
     .use(require('markdown-it-container'))
     .use(require('markdown-it-highlightjs'))
-    .use(require('markdown-it-imsize'));
-
+    .use(require('markdown-it-imsize'))
+    .use(require('markdown-it-link-target'));
 
 
 console.log(`
