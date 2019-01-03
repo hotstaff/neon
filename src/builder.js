@@ -150,8 +150,8 @@ var construct_index_html = function construct_index_html(index_json) {
 <meta name="generator" content="neon">
 <title>${SITE_JSON.title}</title>
 <frameset cols="20%,80%" frameborder="no" border="0">
-  <frame src="menu.htm">
-  <frame src="top.htm" name="top">
+  <frame src="menu.html">
+  <frame src="top.html" name="top">
 </frameset>`;
 }
 
@@ -162,7 +162,7 @@ var construct_menu_html = function construct_menu_html(index_json) {
         if (page.source === "top.md") {
             return ;
         }
-        var link = page.source.replace(/.md/, ".htm");
+        var link = page.source.replace(/.md/, ".html");
         var pagetitle = page.title;
         atags =  atags  + `<a href="${link}" target="top">${pagetitle}</a><br><br>\n`;
     })
@@ -178,7 +178,7 @@ var construct_menu_html = function construct_menu_html(index_json) {
 <br>
 ${atags}
 <hr>
-<a href="top.htm" target="top">TOP</a><br>
+<a href="top.html" target="top">TOP</a><br>
 </center>
 `;
 }
@@ -200,7 +200,7 @@ var convert2html = function convert2html(file) {
         fs.readFile(path.resolve(SOURCE_DIR, file), "utf8", function(err, md_text){
             if (err) onRejected("Convert failure(read): " + file);
             var ret = {};
-            fs.writeFile(path.resolve(DEST_DIR, file.replace(/.md/, ".htm")), construct_page_html(MD.render(md_text, ret)), function(err){
+            fs.writeFile(path.resolve(DEST_DIR, file.replace(/.md/, ".html")), construct_page_html(MD.render(md_text, ret)), function(err){
                 if (err) onRejected("Convert failure(write): " + file);
                 ret.source = file;
                 onFulfilled(ret);
@@ -276,8 +276,8 @@ var build_all = function build_all(){
     .then(construct_index_json)
     .then(function(index_json){
         console.log(index_json);
-        write_html(path.resolve(DEST_DIR, "menu.htm"), construct_menu_html(index_json));
-        write_html(path.resolve(DEST_DIR, "index.htm"), construct_index_html(index_json));
+        write_html(path.resolve(DEST_DIR, "menu.html"), construct_menu_html(index_json));
+        write_html(path.resolve(DEST_DIR, "index.html"), construct_index_html(index_json));
         return index_json;
     })
     .then(function(){
