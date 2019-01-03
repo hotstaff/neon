@@ -44,7 +44,6 @@ MD.use(require('markdown-it-title'))
     .use(require('markdown-it-link-attributes'),{
 	    attrs: {
     		target: '_blank',
-    		rel: 'noopener'
 	    }
     });
 
