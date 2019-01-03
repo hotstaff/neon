@@ -288,6 +288,7 @@ var build_all = function build_all(){
 
 build_all();
 
+/* EVENT WATCHER START */
 watcher = chokidar.watch(SOURCE_DIR,{
     ignored:/[\/\\]\./,
     persistent:true
@@ -309,4 +310,5 @@ watcher.on('ready',function(){
         }
     });
 });
+/* EVENT WATCHER END */
 
