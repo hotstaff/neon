@@ -198,7 +198,7 @@ var construct_menu_html = function construct_menu_html(index_json) {
 <br>
 ${atags}
 <hr>
-<a href="top.html" target="top">TOP</a><br>
+<a href="top.html" target="top">${SITE_JSON.toptitle || "TOP"}</a><br>
 </center>
 `;
 }
