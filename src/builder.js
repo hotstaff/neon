@@ -15,6 +15,7 @@ var SITE_JSON_NAME;
 var SITE_JSON;
 var SOURCE_DIR;
 var DEST_DIR;
+var POST_EDIT;
 
 /* Instance */
 var watcher;
@@ -23,6 +24,7 @@ var watcher;
 var chokidar = require("chokidar");
 var fs = require("fs");
 var path = require("path");
+var exec = require('child_process').exec;
 
 var MD = require('markdown-it')({
     typographer: true,
@@ -41,11 +43,13 @@ MD.use(require('markdown-it-title'))
     .use(require('markdown-it-container'))
     .use(require('markdown-it-highlightjs'))
     .use(require('markdown-it-imsize'))
-    .use(require('markdown-it-link-attributes'),{
-	    attrs: {
-    		target: '_blank',
-	    }
+    .use(require('markdown-it-link-attributes'), {
+        attrs: {
+            target: '_blank',
+        }
     });
+
+var gm = require('gm');
 
 
 console.log(`
@@ -103,6 +107,16 @@ function isExistDir(dirname, creation=true) {
     }
     return true;
 }
+
+function exec_script(command) {
+    if (command !== null) {
+        console.log(`Exec: ${command}`);
+        const result =  exec(command, function(err, stdout, stderr) {
+            if (err) console.log(err)
+                console.log(stdout);
+            });
+    }
+}
 /* Common function end */
 
 /* START UP CHECK START */
@@ -135,6 +149,8 @@ try{
 /* Common configuration */
 SOURCE_DIR = path.dirname(SITE_JSON_NAME);
 DEST_DIR =  path.resolve(SOURCE_DIR, SITE_JSON.dest || "./") ;
+
+POST_EDIT = SITE_JSON.post_edit || null;
 
 /* Dest dir check */
 if (isExistDir(DEST_DIR) === false) {
@@ -188,12 +204,13 @@ ${atags}
 }
 
 var construct_page_html = function construct_page_html(md_html) {
+    var highlight = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/monokai-sublime.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>`
     return `<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="generator" content="neon">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/monokai-sublime.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>
+${md_html.match("class=\"hljs\"") ? highlight : ""}
 ${md_html}
 `;
 }
@@ -202,10 +219,12 @@ ${md_html}
 var convert2html = function convert2html(file) {
     return new Promise(function(onFulfilled, onRejected) {
         fs.readFile(path.resolve(SOURCE_DIR, file), "utf8", function(err, md_text){
-            if (err) onRejected("Convert failure(read): " + file);
             var ret = {};
-            fs.writeFile(path.resolve(DEST_DIR, file.replace(/.md/, ".html")), construct_page_html(MD.render(md_text, ret)), function(err){
-                if (err) onRejected("Convert failure(write): " + file);
+            if (err) onRejected("Convert failure(read): " + file);
+            fs.writeFile(path.resolve(DEST_DIR, file.replace(/.md/, ".html")), 
+                         construct_page_html(MD.render(md_text, ret)),
+                         function(err){
+                if (err) onRejected(err);
                 ret.source = file;
                 onFulfilled(ret);
             });
@@ -213,33 +232,78 @@ var convert2html = function convert2html(file) {
     })
 }
 
-var obtain_markdown_files = function obtain_markdown_files (dirname) {
+var convert_image = function convert_image(file) {
+    return new Promise(function(onFulfilled, onRejected) {
+        var samnail_name = path.basename(file, path.extname(file)) + "_sum" + path.extname(file),
+            sumnail_path = path.resolve(SOURCE_DIR, samnail_name);
+        gm(path.resolve(SOURCE_DIR, file)).resize(300)
+            .noProfile()
+            .write(sumnail_path, function (err) {
+                if (err) onRejected(err);
+                onFulfilled(file);
+            });
+    });
+}
+
+/*
+  extnames is array object.
+*/
+var obtain_files = function obtain_markdown_files (dirname, extnames) {
     return new Promise(function(onFulfilled, onRejected) {
         fs.readdir(dirname, function(err, files) {
-            if (err) {
-                onRejected("Do not obtain markdown: " + dirname);
-            }
+            if (err) onRejected(err);
             onFulfilled(files.filter(function(file){
                 var file_path = path.resolve(dirname, file);
-                return fs.statSync(file_path).isFile() && /.*\.md$/.test(file_path); //絞り込み
+                return fs.statSync(file_path).isFile() && 
+                    extnames.indexOf(path.extname(file_path)) >= 0; //絞り込み
             }));
         });
     });
+}
+
+var obtain_markdown_files = function obtain_markdown_files (dirname) {
+    return obtain_files(dirname, [".md"]);
+}
+
+var obtain_image_files = function obtain_image_files (dirname) {
+    return obtain_files(dirname, [".jpg", ".png"])
 }
 /* TEMPLETE END */
 
 
 /* MAIN FUNCTION STARTS */
+
 var construct_index_json = function construct_index_json (md_files) {
     return new Promise(function(onFulfilled, onRejected) {
         var index_json = {
             pages:[]
         }
-        md_files.forEach( function(md_file) {
+        md_files.forEach(function(md_file) {
             index_json.pages.push({title: md_file.title, source: md_file.source})
         });
         
         onFulfilled(index_json);
+    });
+}
+
+var shrink_resource = function shrink_resource() {
+    return new Promise(function(onFulfilled, onRejected) {
+        obtain_image_files(SOURCE_DIR).then(function(image_files){
+            return Promise.all(image_files.filter(function(file){
+                return file.indexOf("_sum") < 0;
+            }).map(function(file){
+                return convert_image(file);
+            }));
+        }).then(
+            function(image_files){
+                console.log("Resource converted.");
+                onFulfilled(image_files);
+            },
+            function(err){
+                console.log(err.message);
+                onRejected("Resource converted Error.");
+            }
+        );
     });
 }
 
@@ -261,10 +325,11 @@ var convert_all = function convert_all() {
     });
 }
 
+
 var write_html = function write_html(fname, html_text) {
     return new Promise(function (onFulfilled, onRejected) {
         fs.writeFile(fname, html_text, function(err){
-                if (err) onRejected("Error write html: " + fname);
+                if (err) onRejected(err);
                 onFulfilled(html_text);
             });
     });
@@ -276,6 +341,7 @@ var write_html = function write_html(fname, html_text) {
 var build_all = function build_all(){
     start_time = Date.now();
     Promise.resolve()
+    .then(shrink_resource)
     .then(convert_all)
     .then(construct_index_json)
     .then(function(index_json){
@@ -286,6 +352,8 @@ var build_all = function build_all(){
     })
     .then(function(){
         console.log("Time: " + Number(Date.now() - start_time) + " msec.");
+    }).then(function(){
+        exec_script(POST_EDIT);
     })
 
 };
@@ -303,14 +371,16 @@ watcher.on('ready',function(){
     watcher.on('add',function(file_path){
         if (path.extname(file_path) === ".md") {
             console.log(file_path + " added.");
-            build_all();  
+            build_all();
+            exec_script(POST_EDIT);
         }
     });
 
     watcher.on('change',function(file_path){
         if (path.extname(file_path) === ".md") {
             console.log(file_path + " changed.");
-            build_all();    
+            build_all();
+            exec_script(POST_EDIT);
         }
     });
 });

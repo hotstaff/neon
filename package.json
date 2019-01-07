@@ -8,12 +8,13 @@
   },
   "scripts": {
     "demo-build": "node src/builder.js demo/site.json",
-    "demo-clean": "rm -rf ./demo/*.htm"
+    "demo-clean": "rm -rf ./demo/*.html"
   },
   "author": "Hideto Manjo",
   "license": "MIT",
   "dependencies": {
     "chokidar": "^2.0.4",
+    "gm": "^1.23.1",
     "highlight.js": "^9.13.1",
     "markdown-it": "^8.4.1",
     "markdown-it-abbr": "^1.0.4",
