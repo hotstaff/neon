@@ -220,11 +220,11 @@ var convert2html = function convert2html(file) {
     return new Promise(function(onFulfilled, onRejected) {
         fs.readFile(path.resolve(SOURCE_DIR, file), "utf8", function(err, md_text){
             var ret = {};
-            if (err) onRejected("Convert failure(read): " + file);
+            if (err) return onRejected(err);
             fs.writeFile(path.resolve(DEST_DIR, file.replace(/.md/, ".html")), 
                          construct_page_html(MD.render(md_text, ret)),
                          function(err){
-                if (err) onRejected(err);
+                if (err) return onRejected(err);
                 ret.source = file;
                 onFulfilled(ret);
             });
@@ -236,10 +236,15 @@ var convert_image = function convert_image(file) {
     return new Promise(function(onFulfilled, onRejected) {
         var samnail_name = path.basename(file, path.extname(file)) + "_sum" + path.extname(file),
             sumnail_path = path.resolve(SOURCE_DIR, samnail_name);
+
+        if (isExistFile(sumnail_path)) {
+            return onFulfilled(file);
+        }
+
         gm(path.resolve(SOURCE_DIR, file)).resize(300)
             .noProfile()
             .write(sumnail_path, function (err) {
-                if (err) onRejected(err);
+                if (err) return onRejected(err);
                 onFulfilled(file);
             });
     });
@@ -251,7 +256,7 @@ var convert_image = function convert_image(file) {
 var obtain_files = function obtain_markdown_files (dirname, extnames) {
     return new Promise(function(onFulfilled, onRejected) {
         fs.readdir(dirname, function(err, files) {
-            if (err) onRejected(err);
+            if (err) return onRejected(err);
             onFulfilled(files.filter(function(file){
                 var file_path = path.resolve(dirname, file);
                 return fs.statSync(file_path).isFile() && 
@@ -329,7 +334,7 @@ var convert_all = function convert_all() {
 var write_html = function write_html(fname, html_text) {
     return new Promise(function (onFulfilled, onRejected) {
         fs.writeFile(fname, html_text, function(err){
-                if (err) onRejected(err);
+                if (err) return onRejected(err);
                 onFulfilled(html_text);
             });
     });
