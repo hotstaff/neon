@@ -176,15 +176,13 @@ var construct_index_html = function construct_index_html(index_json) {
 }
 
 var construct_menu_html = function construct_menu_html(index_json) {
-    var pages = index_json.pages;
-    var atags = "";
+    var pages = index_json.pages,
+        atags = "";
+
     pages.forEach(function(page) {
-        if (page.source === "top.md") {
-            return ;
-        }
+        if (page.source === "top.md") return;
         var link = page.source.replace(/.md/, ".html");
-        var pagetitle = page.title;
-        atags =  atags  + `<a href="${link}" target="top">${pagetitle}</a><br><br>\n`;
+        atags =  atags  + `<a href="${link}" target="top">${page.title}</a><br><br>\n`;
     })
         
     return `<!DOCTYPE html>
@@ -196,8 +194,7 @@ var construct_menu_html = function construct_menu_html(index_json) {
 <h2>${SITE_JSON.menutitle || "MENU"}</h2>
 <hr>
 <br>
-${atags}
-<hr>
+${atags}<hr>
 <a href="top.html" target="top">${SITE_JSON.toptitle || "TOP"}</a><br>
 </center>
 `;
@@ -210,8 +207,7 @@ var construct_page_html = function construct_page_html(md_html) {
     return `<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="generator" content="neon">
-${md_html.match("class=\"hljs\"") ? highlight : ""}
-${md_html}
+${md_html.match("class=\"hljs\"") ? highlight : ""}${md_html}
 `;
 }
 
@@ -360,8 +356,8 @@ var build_all = function build_all(){
     }).then(function(){
         exec_script(POST_EDIT);
     })
-
 };
+
 
 build_all();
 
