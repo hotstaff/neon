@@ -267,7 +267,7 @@ var obtain_markdown_files = function obtain_markdown_files (dirname) {
 }
 
 var obtain_image_files = function obtain_image_files (dirname) {
-    return obtain_files(dirname, [".jpg", ".png"])
+    return obtain_files(dirname, [".jpg", ".png", ".gif"])
 }
 /* TEMPLETE END */
 
