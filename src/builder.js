@@ -15,7 +15,6 @@ var SITE_JSON_NAME;
 var SITE_JSON;
 var SOURCE_DIR;
 var DEST_DIR;
-var POST_EDIT;
 
 /* Instance */
 var watcher;
@@ -110,12 +109,14 @@ function isExistDir(dirname, creation=true) {
 
 function exec_script(command) {
     if (command !== null) {
-        console.log(`Exec: ${command}`);
+        console.log("exec: " + command);
         const result =  exec(command, function(err, stdout, stderr) {
             if (err) console.log(err)
                 console.log(stdout);
             });
+        return true;
     }
+    return false;
 }
 /* Common function end */
 
@@ -149,8 +150,6 @@ try{
 /* Common configuration */
 SOURCE_DIR = path.dirname(SITE_JSON_NAME);
 DEST_DIR =  path.resolve(SOURCE_DIR, SITE_JSON.dest || "./") ;
-
-POST_EDIT = SITE_JSON.post_edit || null;
 
 /* Dest dir check */
 if (isExistDir(DEST_DIR) === false) {
@@ -336,6 +335,11 @@ var write_html = function write_html(fname, html_text) {
     });
 }
 
+var post_script = function post_script(name) {
+    return exec_script(SITE_JSON["post_" + name] || null);
+}
+    
+
 /* MAIN FUNCTION END */
 
 /* Main sequence */
@@ -354,7 +358,10 @@ var build_all = function build_all(){
     .then(function(){
         console.log("Time: " + Number(Date.now() - start_time) + " msec.");
     }).then(function(){
-        exec_script(POST_EDIT);
+        // The order means priority
+        if(post_script("all")) return;
+        if(post_script("add")) return;
+        if(post_script("edit")) return;
     })
 };
 
@@ -373,7 +380,6 @@ watcher.on('ready',function(){
         if (path.extname(file_path) === ".md") {
             console.log(file_path + " added.");
             build_all();
-            exec_script(POST_EDIT);
         }
     });
 
@@ -381,7 +387,6 @@ watcher.on('ready',function(){
         if (path.extname(file_path) === ".md") {
             console.log(file_path + " changed.");
             build_all();
-            exec_script(POST_EDIT);
         }
     });
 });
