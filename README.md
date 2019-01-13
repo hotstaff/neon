@@ -19,6 +19,14 @@ HPは手書きのhtmlを書く代わりにgithubやQiitaのようなmarkdown言�
 
 ## インストール
 
+画像をサムネイルに変換する機能をつけているため
+GraphicsMagickをインストールする必要があります。
+
+### ubuntuの場合
+```bash
+apt install gm
+```
+
 ```bash
 git clone --depth=1 https://github.com/hotstaff/neon.git
 cd neon
