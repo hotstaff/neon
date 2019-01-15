@@ -186,7 +186,7 @@ var construct_menu_html = function construct_menu_html(index_json) {
         
     return `<!DOCTYPE html>
 <meta charset="UTF-8">
-<meta name="generator" content="neon">${SITE_JSON.menu_head || ""}
+<meta name="generator" content="neon">${SITE_JSON.menu_head || SITE_JSON.head || ""}
 <title>menu</title>
 <center>
 <hr>
@@ -205,7 +205,7 @@ var construct_page_html = function construct_page_html(md_html) {
 <script>hljs.initHighlightingOnLoad();</script>`
     return `<!DOCTYPE html>
 <meta charset="UTF-8">
-<meta name="generator" content="neon">${SITE_JSON.page_head || ""}
+<meta name="generator" content="neon">${SITE_JSON.page_head || SITE_JSON.head || ""}
 ${md_html.match("class=\"hljs\"") ? highlight : ""}${md_html}
 `;
 }
