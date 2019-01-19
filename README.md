@@ -39,6 +39,10 @@ npm install
 npm run demo-build
 ```
 
+## プルリクエストについて
+
+是非送ってください。
+
 ## Licence
 MIT
 
