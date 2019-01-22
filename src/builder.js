@@ -219,17 +219,17 @@ var construct_menu_html5 = function construct_menu_html5(index_json) {
     pages.forEach(function(page) {
         if (page.source === "top.md") return;
         var link = page.source.replace(/.md/, ".html");
-        litags = litags + `<a href="${link}"><i class="fa fa-file-text fa-fw"></i><span>${page.title}</span></a></li>\n`;
+        litags = litags + `<li><a href="${link}"><i class="fa fa-file-text fa-fw"></i><span>${page.title}</span></a></li>\n`;
     })
 
     return `
 <div class="sidebar">
-    <header>${SITE_JSON.menutitle || "MENU"}</header>
-    <nav class="sidebar_nav">
-    <ul>
-        ${litags}
-        <li class="control"><a href="#"><i class="fa fa-home fa-fw"></i><span class="">${SITE_JSON.toptitle || "TOP"}</span></a></li>
-    </ul>
+<header>${SITE_JSON.menutitle || "MENU"}</header>
+<nav class="sidebar_nav">
+<ul>
+${litags}<li class="control"><a href="top.html"><i class="fa fa-home fa-fw"></i><span class="">${SITE_JSON.toptitle || "TOP"}</span></a></li>
+</ul>
+</nav>
 </div>
 `;
 }
@@ -240,10 +240,10 @@ var construct_page_html5 = function construct_page_html5(md_html, nav_html) {
 <script>hljs.initHighlightingOnLoad();</script>`;
     return `<!DOCTYPE html>
 <meta charset="UTF-8">
-<meta name="generator" content="neon">${SITE_JSON.page_head || SITE_JSON.head || ""}
+<meta name="generator" content="neon">
+${SITE_JSON.page_head || SITE_JSON.head || ""}
 ${md_html.match("class=\"hljs\"") ? highlight : ""}
-<body>
-${nav_html}
+<body>${nav_html}
 <main>${md_html}</main>
 </body>
 `;
@@ -254,16 +254,13 @@ var convert2html = function convert2html(file) {
     return new Promise(function(onFulfilled, onRejected) {
         fs.readFile(path.resolve(SOURCE_DIR, file), "utf8", function(err, md_text) {
             var ret = {};
+
             if (err) return onRejected(err);
 
-            fs.writeFile(path.resolve(DEST_DIR, file.replace(/.md/, ".html")),
-                construct_page_html(MD.render(md_text, ret)),
-                function(err) {
-                    if (err) return onRejected(err);
-                    ret.source = file;
-                    onFulfilled(ret);
-                }
-            );
+            ret.source = file;
+            ret.contents = MD.render(md_text, ret);
+
+            return onFulfilled(ret);
         })
     })
 }
@@ -322,7 +319,11 @@ var construct_index_json = function construct_index_json(md_files) {
             pages: []
         }
         md_files.forEach(function(md_file) {
-            index_json.pages.push({ title: md_file.title, source: md_file.source })
+            index_json.pages.push({
+                title: md_file.title,
+                source: md_file.source, 
+                contents: md_file.contents
+            });
         });
 
         onFulfilled(index_json);
@@ -396,10 +397,23 @@ var build_all = function build_all() {
         .then(function(index_json) {
             console.log(index_json);
             if (SITE_JSON.html5 !== true) {
-                console.log("Output classic frameset: index.html")
+                index_json.pages.forEach(function(page){
+                    write_html(path.resolve(DEST_DIR, page.source.replace(/.md/, ".html")), construct_page_html(page.contents));
+                });
+                console.log("Output classic frameset: index.html, menu.html");
                 write_html(path.resolve(DEST_DIR, "menu.html"), construct_menu_html(index_json));
                 write_html(path.resolve(DEST_DIR, "index.html"), construct_index_html(index_json));
+            }else{
+                var nav_html = construct_menu_html5(index_json); 
+                index_json.pages.forEach(function(page){
+                    var page_html = construct_page_html5(page.contents, nav_html)
+                    if (page.source === "top.md"){
+                        write_html(path.resolve(DEST_DIR, "index.html"), page_html);
+                    }
+                    write_html(path.resolve(DEST_DIR, page.source.replace(/.md/, ".html")), page_html);
+                });
             }
+
             return index_json;
         })
         .then(function() {
