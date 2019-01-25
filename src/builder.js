@@ -264,7 +264,9 @@ var construct_menu_html5 = function construct_menu_html5(index_json) {
 <header>${SITE_JSON.menutitle || "MENU"}</header>
 <nav class="sidebar_nav">
 <ul>
-${litags}<li class="control"><a href="top.html"><i class="fa fa-home fa-fw"></i><span class="">${SITE_JSON.toptitle || "TOP"}</span></a></li>
+${litags}<li class="control">
+<a href="top.html"><i class="fa fa-home fa-fw"></i><span class="">${SITE_JSON.toptitle || "TOP"}</span></a>
+</li>
 </ul>
 </nav>
 </div>
@@ -411,9 +413,11 @@ var convert_all = function convert_all() {
     return new Promise(function (onFulfilled, onRejected) {
         obtain_markdown_files(SOURCE_DIR).then(
             function (md_files) {
-                return Promise.all(md_files.map(function (file) {
-                    return convert2html(file);
-                }));
+                return Promise.all(
+                    md_files.map(function (file) {
+                        return convert2html(file);
+                    })
+                );
             }
         ).then(
             function (md_files) {
@@ -458,7 +462,15 @@ var build_all = function build_all() {
         construct_index_json
     ).then(
         function (index_json) {
-            console.log(index_json);
+            console.log("Pages:");
+            index_json.pages.forEach(function (page) {
+                console.log(
+                    "  Source %s, title: %s, length: %s",
+                    page.source,
+                    page.title,
+                    page.contents.length
+                );
+            });
             if (SITE_JSON.html5 !== true) {
                 index_json.pages.forEach(function (page) {
                     write_html(
