@@ -346,13 +346,15 @@ var obtain_files = function obtain_files(dirname, extnames) {
                 return onRejected(err);
             }
 
-            onFulfilled(files.filter(function (file) {
-                var file_path = path.resolve(dirname, file);
-                return (
-                    fs.statSync(file_path).isFile()
-                    && extnames.indexOf(path.extname(file_path)) >= 0
-                );
-            }));
+            onFulfilled(
+                files.filter(function (file) {
+                    var file_path = path.resolve(dirname, file);
+                    return (
+                        fs.statSync(file_path).isFile()
+                        && extnames.indexOf(path.extname(file_path)) >= 0
+                    );
+                })
+            );
         });
     });
 };
@@ -390,11 +392,17 @@ var shrink_resource = function shrink_resource() {
     return new Promise(function (onFulfilled, onRejected) {
         obtain_image_files(SOURCE_DIR).then(
             function (image_files) {
-                return Promise.all(image_files.filter(function (file) {
-                    return file.indexOf("_sum") < 0;
-                }).map(function (file) {
-                    return convert_image(file);
-                }));
+                return Promise.all(
+                    image_files.filter(
+                        function (file) {
+                            return file.indexOf("_sum") < 0;
+                        }
+                    ).map(
+                        function (file) {
+                            return convert_image(file);
+                        }
+                    )
+                );
             }
         ).then(
             function (image_files) {
@@ -488,6 +496,7 @@ var build_all = function build_all() {
                     construct_index_html(index_json)
                 );
             } else {
+                console.log("Output HTML5 side menu: index.html, menu.html");
                 var nav_html = construct_menu_html5(index_json);
                 index_json.pages.forEach(function (page) {
                     var page_html = construct_page_html5(
