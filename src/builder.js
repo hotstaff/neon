@@ -542,7 +542,7 @@ var build_all = function build_all() {
 build_all();
 
 /* EVENT WATCHER START */
-watcher = chokidar.watch(SOURCE_DIR, {
+watcher = chokidar.watch([SOURCE_DIR, SITE_JSON_NAME], {
     ignored: /[\/\\]\./,
     persistent: true
 });
@@ -557,10 +557,15 @@ watcher.on("ready", function () {
     });
 
     watcher.on("change", function (file_path) {
-        if (path.extname(file_path) === ".md") {
+        if (
+            path.extname(file_path) === ".md"
+            || file_path === SITE_JSON_NAME
+        ) {
             console.log(file_path + " changed.");
             build_all();
         }
+
+
     });
 });
 /* EVENT WATCHER END */
