@@ -15,6 +15,7 @@ var start_time;
 /* Defines */
 var SITE_JSON_NAME;
 var SITE_JSON;
+var INDEX_JSON;
 var SOURCE_DIR;
 var DEST_DIR;
 
@@ -288,7 +289,8 @@ var construct_page_html5 = function construct_page_html5(md_html, nav_html) {
 ${SITE_JSON.page_head || SITE_JSON.head || ""}
 ${highlight_tag}
 <body>${nav_html}
-<main>${md_html}</main>
+<main>
+${md_html}</main>
 </body>
 `;
 };
@@ -329,7 +331,7 @@ var convert_image = function convert_image(file) {
                 if (err) {
                     return onRejected(err);
                 }
-                onFulfilled(file);
+                return onFulfilled(file);
             }
         );
     });
@@ -341,20 +343,23 @@ var convert_image = function convert_image(file) {
 var obtain_files = function obtain_files(dirname, extnames) {
     return new Promise(function (onFulfilled, onRejected) {
         fs.readdir(dirname, function (err, files) {
+            var ret;
 
             if (err) {
                 return onRejected(err);
             }
 
-            onFulfilled(
-                files.filter(function (file) {
+            ret = files.filter(
+                function (file) {
                     var file_path = path.resolve(dirname, file);
                     return (
                         fs.statSync(file_path).isFile()
                         && extnames.indexOf(path.extname(file_path)) >= 0
                     );
-                })
+                }
             );
+
+            return onFulfilled(ret);
         });
     });
 };
@@ -371,18 +376,11 @@ var obtain_image_files = function obtain_image_files(dirname) {
 
 /* MAIN FUNCTION STARTS */
 
-var construct_index_json = function construct_index_json(md_files) {
+var construct_index_json = function construct_index_json(pages) {
     return new Promise(function (onFulfilled) {
         var index_json = {
-            pages: []
+            pages: pages
         };
-        md_files.forEach(function (md_file) {
-            index_json.pages.push({
-                title: md_file.title,
-                source: md_file.source,
-                contents: md_file.contents
-            });
-        });
 
         onFulfilled(index_json);
     });
@@ -408,16 +406,17 @@ var shrink_resource = function shrink_resource() {
             function (image_files) {
                 console.log("Resource converted.");
                 onFulfilled(image_files);
-            },
+            }
+        ).catch(
             function (err) {
-                console.log(err.message);
-                onRejected("Resource converted Error.");
+                console.log("Resource converted Error.");
+                onRejected(err);
             }
         );
     });
 };
 
-var convert_all = function convert_all() {
+var convert_md_all = function convert_md_all() {
     return new Promise(function (onFulfilled, onRejected) {
         obtain_markdown_files(SOURCE_DIR).then(
             function (md_files) {
@@ -428,18 +427,62 @@ var convert_all = function convert_all() {
                 );
             }
         ).then(
-            function (md_files) {
-                console.log("HTML generation succeeded!");
-                onFulfilled(md_files);
-            },
+            function (pages) {
+                console.log("HTML generation succeeded!(all)");
+                pages.forEach(function (page) {
+                    page.write = true;
+                });
+                onFulfilled(pages);
+            }
+        ).catch(
             function (err) {
-                console.log(err.message);
-                onRejected("HTML generation Error.");
+                console.log("HTML generation Error.");
+                onRejected(err);
             }
         );
     });
 };
 
+var convert_md = function convert_md(md_file) {
+    if (md_file === undefined || INDEX_JSON === undefined) {
+        return convert_md_all();
+    }
+
+    return new Promise(function (onFulfilled, onRejected) {
+        convert2html(path.basename(md_file)).then(
+            function (new_page) {
+                var new_pages = INDEX_JSON.pages;
+                var page_index = new_pages.findIndex(function (page) {
+                    return new_page.source === page.source;
+                });
+
+
+                if (new_pages[page_index].title !== new_page.title) {
+                    new_pages.forEach(function (page) {
+                        page.write = true;
+                    });
+                } else {
+                    new_page.write = true;
+                }
+
+                // rewrite
+                new_pages[page_index] = new_page;
+
+                return new_pages;
+            }
+        ).then(
+            function (pages) {
+                console.log("HTML generation succeeded!");
+                onFulfilled(pages);
+            }
+        ).catch(
+            function (err) {
+                console.log("HTML generation Error.");
+                onRejected(err);
+            }
+        );
+    });
+};
 
 var write_html = function write_html(fname, html_text) {
     return new Promise(function (onFulfilled, onRejected) {
@@ -447,8 +490,80 @@ var write_html = function write_html(fname, html_text) {
             if (err) {
                 return onRejected(err);
             }
-            onFulfilled(html_text);
+            return onFulfilled(html_text);
         });
+    });
+};
+
+var write_pages = function write_pages(index_json) {
+    return new Promise(function (onFulfilled, onRejected) {
+        var promises = [];
+
+        if (SITE_JSON.html5 !== true) {
+            console.log("Output classic frameset: index.html, menu.html");
+            index_json.pages.forEach(function (page) {
+                if (page.write === true) {
+                    promises.push(
+                        write_html(
+                            path.resolve(DEST_DIR, page.source.replace(/.md/, ".html")),
+                            construct_page_html(page.contents)
+                        )
+                    );
+                }
+                page.write = false;
+            });
+
+            promises.push(
+                write_html(
+                    path.resolve(DEST_DIR, "menu.html"),
+                    construct_menu_html(index_json)
+                ),
+                write_html(
+                    path.resolve(DEST_DIR, "index.html"),
+                    construct_index_html(index_json)
+                )
+            );
+
+        } else {
+            console.log("Output HTML5 side menu: index.html, menu.html");
+            var nav_html = construct_menu_html5(index_json);
+            index_json.pages.forEach(function (page) {
+                var page_html = construct_page_html5(
+                    page.contents,
+                    nav_html
+                );
+
+                if (page.source === "top.md") {
+                    promises.push(
+                        write_html(
+                            path.resolve(DEST_DIR, "index.html"),
+                            page_html
+                        )
+                    );
+                }
+                if (page.write === true) {
+                    promises.push(
+                        write_html(
+                            path.resolve(DEST_DIR, page.source.replace(/.md/, ".html")),
+                            page_html
+                        )
+                    );
+                }
+                page.write = false;
+            });
+        }
+
+        Promise.all(
+            promises
+        ).then(
+            function () {
+                return onFulfilled(index_json);
+            }
+        ).catch(
+            function (err) {
+                return onRejected(err);
+            }
+        );
     });
 };
 
@@ -456,74 +571,44 @@ var post_script = function post_script(name) {
     return exec_script(SITE_JSON["post_" + name] || null);
 };
 
-
 /* MAIN FUNCTION END */
 
 /* Main sequence */
-var build_all = function build_all() {
+var build = function build(md_file) {
     start_time = Date.now();
     Promise.resolve().then(
         shrink_resource
     ).then(
-        convert_all
+        function onFullfilled() {
+            return md_file;
+        }
+    ).then(
+        convert_md
     ).then(
         construct_index_json
     ).then(
-        function (index_json) {
+        function onFulfilled(index_json) {
             console.log("Pages:");
             index_json.pages.forEach(function (page) {
                 console.log(
-                    "  Source %s, title: %s, length: %s",
+                    "  Source %s, title: %s, length: %s, write: %s",
                     page.source,
                     page.title,
-                    page.contents.length
+                    page.contents.length,
+                    page.write
                 );
             });
-            if (SITE_JSON.html5 !== true) {
-                index_json.pages.forEach(function (page) {
-                    write_html(
-                        path.resolve(DEST_DIR, page.source.replace(/.md/, ".html")),
-                        construct_page_html(page.contents)
-                    );
-                });
-                console.log("Output classic frameset: index.html, menu.html");
-                write_html(
-                    path.resolve(DEST_DIR, "menu.html"),
-                    construct_menu_html(index_json)
-                );
-                write_html(
-                    path.resolve(DEST_DIR, "index.html"),
-                    construct_index_html(index_json)
-                );
-            } else {
-                console.log("Output HTML5 side menu: index.html, menu.html");
-                var nav_html = construct_menu_html5(index_json);
-                index_json.pages.forEach(function (page) {
-                    var page_html = construct_page_html5(
-                        page.contents,
-                        nav_html
-                    );
-                    if (page.source === "top.md") {
-                        write_html(
-                            path.resolve(DEST_DIR, "index.html"),
-                            page_html
-                        );
-                    }
-                    write_html(
-                        path.resolve(DEST_DIR, page.source.replace(/.md/, ".html")),
-                        page_html
-                    );
-                });
-            }
-
             return index_json;
         }
     ).then(
-        function () {
+        write_pages
+    ).then(
+        function onFulfilled(index_json) {
+            INDEX_JSON = index_json;
             console.log("Time: " + Number(Date.now() - start_time) + " msec.");
         }
     ).then(
-        function () {
+        function onFulfilled() {
             // The order means priority
             if (post_script("all")) {
                 return;
@@ -535,11 +620,17 @@ var build_all = function build_all() {
                 return;
             }
         }
+    ).catch(
+        function onRejected(err) {
+            console.error(err);
+            // console.log("Stop");
+            process.exit(1);
+        }
     );
 };
 
 
-build_all();
+build();
 
 /* EVENT WATCHER START */
 watcher = chokidar.watch([SOURCE_DIR, SITE_JSON_NAME], {
@@ -552,17 +643,19 @@ watcher.on("ready", function () {
     watcher.on("add", function (file_path) {
         if (path.extname(file_path) === ".md") {
             console.log(file_path + " added.");
-            build_all();
+            build();
         }
     });
 
     watcher.on("change", function (file_path) {
-        if (
-            path.extname(file_path) === ".md"
-            || file_path === SITE_JSON_NAME
-        ) {
+        if (path.extname(file_path) === ".md") {
             console.log(file_path + " changed.");
-            build_all();
+            build(file_path);
+        }
+
+        if (file_path === SITE_JSON_NAME) {
+            console.log(file_path + " changed.");
+            build();
         }
 
 
