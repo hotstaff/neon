@@ -12,23 +12,22 @@
 // time variable
 var start_time;
 
-/* Defines */
-var SITE_JSON_NAME;
-var SITE_JSON;
-var INDEX_JSON;
-var SOURCE_DIR;
-var DEST_DIR;
+/* Consts */
+const CONST_DOCTYPE_AND_META = `<!DOCTYPE html>
+<meta charset="UTF-8">
+<meta name="generator" content="neon">`;
 
-/* Instance */
-var watcher;
+const CONST_HIGHTLIGHT_TAG = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/monokai-sublime.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>`;
 
 /* Import */
-var chokidar = require("chokidar");
-var fs = require("fs");
-var path = require("path");
-var exec = require("child_process").exec;
+const chokidar = require("chokidar");
+const fs = require("fs");
+const path = require("path");
+const exec = require("child_process").exec;
 
-var MD = require("markdown-it")({
+const MD = require("markdown-it")({
     typographer: true,
     linkify: true
 });
@@ -66,8 +65,17 @@ MD.use(
     }
 );
 
-var gm = require("gm");
+const gm = require("gm");
 
+/* Global defines */
+var SITE_JSON_NAME;
+var SITE_JSON;
+var INDEX_JSON;
+var SOURCE_DIR;
+var DEST_DIR;
+
+/* Instance */
+var watcher;
 
 console.log(`
 
@@ -78,7 +86,6 @@ oooo   oooo ooooooooooo  ooooooo  oooo   oooo
 o88o    88  o888ooo8888  88ooo88  o88o    88
 
 `);
-
 
 /* Common function
     Defined at parsing time. */
@@ -185,9 +192,7 @@ console.log(`Dest directory: ${DEST_DIR}`);
 /* html templete builder
    these code shuld more smart.*/
 var construct_index_html = function construct_index_html() {
-    return `<!DOCTYPE html>
-<meta charset="UTF-8">
-<meta name="generator" content="neon">
+    return `${CONST_DOCTYPE_AND_META}
 <title>${SITE_JSON.title}</title>
 <frameset cols="20%,80%" frameborder="no" border="0">
   <frame src="menu.html">
@@ -210,9 +215,7 @@ var construct_menu_html = function construct_menu_html(index_json) {
         );
     });
 
-    return `<!DOCTYPE html>
-<meta charset="UTF-8">
-<meta name="generator" content="neon">
+    return `${CONST_DOCTYPE_AND_META}
 ${SITE_JSON.menu_head || SITE_JSON.head || ""}
 <title>menu</title>
 <center>
@@ -227,17 +230,12 @@ ${atags}<hr>
 };
 
 var construct_page_html = function construct_page_html(md_html) {
-    var highlight = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/monokai-sublime.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>`;
     var highlight_tag = (
         md_html.match("class=\"hljs\"")
-        ? highlight
+        ? CONST_HIGHTLIGHT_TAG
         : ""
     );
-    return `<!DOCTYPE html>
-<meta charset="UTF-8">
-<meta name="generator" content="neon">${SITE_JSON.page_head || SITE_JSON.head || ""}
+    return `${CONST_DOCTYPE_AND_META}${SITE_JSON.page_head || SITE_JSON.head || ""}
 ${highlight_tag}${md_html}
 `;
 };
@@ -275,17 +273,12 @@ ${litags}<li class="control">
 };
 
 var construct_page_html5 = function construct_page_html5(md_html, nav_html) {
-    var highlight = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/monokai-sublime.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>`;
     var highlight_tag = (
         md_html.match("class=\"hljs\"")
-        ? highlight
+        ? CONST_HIGHTLIGHT_TAG
         : ""
     );
-    return `<!DOCTYPE html>
-<meta charset="UTF-8">
-<meta name="generator" content="neon">
+    return `${CONST_DOCTYPE_AND_META}
 ${SITE_JSON.page_head || SITE_JSON.head || ""}
 ${highlight_tag}
 <body>${nav_html}
