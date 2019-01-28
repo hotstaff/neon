@@ -9,9 +9,6 @@
 
 "use strict";
 
-// time variable
-var start_time;
-
 /* Consts */
 const CONST_DOCTYPE_AND_META = `<!DOCTYPE html>
 <meta charset="UTF-8">
@@ -449,8 +446,10 @@ var convert_md = function convert_md(md_file) {
                     return new_page.source === page.source;
                 });
 
-
-                if (new_pages[page_index].title !== new_page.title) {
+                if (
+                    page_index === -1
+                    || new_pages[page_index].title !== new_page.title
+                ) {
                     new_pages.forEach(function (page) {
                         page.write = true;
                     });
@@ -568,7 +567,8 @@ var post_script = function post_script(name) {
 
 /* Main sequence */
 var build = function build(md_file) {
-    start_time = Date.now();
+    var start_time = Date.now();
+
     Promise.resolve().then(
         shrink_resource
     ).then(
@@ -650,8 +650,10 @@ watcher.on("ready", function () {
             console.log(file_path + " changed.");
             build();
         }
+    });
 
-
+    watcher.on("error", function (error) {
+        console.error(error);
     });
 });
 /* EVENT WATCHER END */
