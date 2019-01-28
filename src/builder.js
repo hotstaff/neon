@@ -188,7 +188,7 @@ console.log(`Dest directory: ${DEST_DIR}`);
 /* TEMPLETE START */
 /* html templete builder
    these code shuld more smart.*/
-var construct_index_html = function construct_index_html() {
+const construct_index_html = function construct_index_html() {
     return `${CONST_DOCTYPE_AND_META}
 <title>${SITE_JSON.title}</title>
 <frameset cols="20%,80%" frameborder="no" border="0">
@@ -197,7 +197,7 @@ var construct_index_html = function construct_index_html() {
 </frameset>`;
 };
 
-var construct_menu_html = function construct_menu_html(index_json) {
+const construct_menu_html = function construct_menu_html(index_json) {
     var pages = index_json.pages;
     var atags = "";
 
@@ -226,7 +226,7 @@ ${atags}<hr>
 `;
 };
 
-var construct_page_html = function construct_page_html(md_html) {
+const construct_page_html = function construct_page_html(md_html) {
     var highlight_tag = (
         md_html.match("class=\"hljs\"")
         ? CONST_HIGHTLIGHT_TAG
@@ -239,7 +239,7 @@ ${highlight_tag}${md_html}
 
 /* html 5*/
 
-var construct_menu_html5 = function construct_menu_html5(index_json) {
+const construct_menu_html5 = function construct_menu_html5(index_json) {
     var pages = index_json.pages;
     var litags = "";
 
@@ -269,7 +269,7 @@ ${litags}<li class="control">
 `;
 };
 
-var construct_page_html5 = function construct_page_html5(md_html, nav_html) {
+const construct_page_html5 = function construct_page_html5(md_html, nav_html) {
     var highlight_tag = (
         md_html.match("class=\"hljs\"")
         ? CONST_HIGHTLIGHT_TAG
@@ -286,7 +286,7 @@ ${md_html}</main>
 };
 
 
-var convert2html = function convert2html(file) {
+const convert2html = function convert2html(file) {
     return new Promise(function (onFulfilled, onRejected) {
         fs.readFile(path.resolve(SOURCE_DIR, file), "utf8", function (err, md_text) {
             var ret = {};
@@ -303,7 +303,7 @@ var convert2html = function convert2html(file) {
     });
 };
 
-var convert_image = function convert_image(file) {
+const convert_image = function convert_image(file) {
     return new Promise(function (onFulfilled, onRejected) {
         var samnail_name = (
             path.basename(file, path.extname(file))
@@ -330,7 +330,7 @@ var convert_image = function convert_image(file) {
 /*
   extnames is array object.
 */
-var obtain_files = function obtain_files(dirname, extnames) {
+const obtain_files = function obtain_files(dirname, extnames) {
     return new Promise(function (onFulfilled, onRejected) {
         fs.readdir(dirname, function (err, files) {
             var ret;
@@ -354,11 +354,11 @@ var obtain_files = function obtain_files(dirname, extnames) {
     });
 };
 
-var obtain_markdown_files = function obtain_markdown_files(dirname) {
+const obtain_markdown_files = function obtain_markdown_files(dirname) {
     return obtain_files(dirname, [".md"]);
 };
 
-var obtain_image_files = function obtain_image_files(dirname) {
+const obtain_image_files = function obtain_image_files(dirname) {
     return obtain_files(dirname, [".jpg", ".png", ".gif"]);
 };
 /* TEMPLETE END */
@@ -366,7 +366,7 @@ var obtain_image_files = function obtain_image_files(dirname) {
 
 /* MAIN FUNCTION STARTS */
 
-var construct_index_json = function construct_index_json(pages) {
+const construct_index_json = function construct_index_json(pages) {
     return new Promise(function (onFulfilled) {
         var index_json = {
             pages: pages
@@ -376,7 +376,7 @@ var construct_index_json = function construct_index_json(pages) {
     });
 };
 
-var shrink_resource = function shrink_resource() {
+const shrink_resource = function shrink_resource() {
     return new Promise(function (onFulfilled, onRejected) {
         obtain_image_files(SOURCE_DIR).then(
             function (image_files) {
@@ -406,7 +406,7 @@ var shrink_resource = function shrink_resource() {
     });
 };
 
-var convert_md_all = function convert_md_all() {
+const convert_md_all = function convert_md_all() {
     return new Promise(function (onFulfilled, onRejected) {
         obtain_markdown_files(SOURCE_DIR).then(
             function (md_files) {
@@ -433,7 +433,7 @@ var convert_md_all = function convert_md_all() {
     });
 };
 
-var convert_md = function convert_md(md_file) {
+const convert_md = function convert_md(md_file) {
     if (md_file === undefined || INDEX_JSON === undefined) {
         return convert_md_all();
     }
@@ -476,7 +476,7 @@ var convert_md = function convert_md(md_file) {
     });
 };
 
-var write_html = function write_html(fname, html_text) {
+const write_html = function write_html(fname, html_text) {
     return new Promise(function (onFulfilled, onRejected) {
         fs.writeFile(fname, html_text, function (err) {
             if (err) {
@@ -487,7 +487,7 @@ var write_html = function write_html(fname, html_text) {
     });
 };
 
-var write_pages = function write_pages(index_json) {
+const write_pages = function write_pages(index_json) {
     return new Promise(function (onFulfilled, onRejected) {
         var promises = [];
 
@@ -559,14 +559,14 @@ var write_pages = function write_pages(index_json) {
     });
 };
 
-var post_script = function post_script(name) {
+const post_script = function post_script(name) {
     return exec_script(SITE_JSON["post_" + name] || null);
 };
 
 /* MAIN FUNCTION END */
 
 /* Main sequence */
-var build = function build(md_file) {
+const build = function build(md_file) {
     var start_time = Date.now();
 
     Promise.resolve().then(
