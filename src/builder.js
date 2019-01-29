@@ -109,12 +109,10 @@ function isExistDir(dirname, creation = true) {
     try {
         stat = fs.statSync(dirname);
     } catch (err) {
-        console.log(err);
-        return false;
-    }
-
-    if (stat.isDirectory() === false) {
-        return false;
+        if (err.code !== "ENOENT") {
+            console.log(err);
+            return false;
+        }
     }
 
     if (creation) {
@@ -127,6 +125,10 @@ function isExistDir(dirname, creation = true) {
             }
             return false;
         }
+    }
+
+    if (stat.isDirectory() === false) {
+        return false;
     }
     return true;
 }
@@ -167,6 +169,7 @@ function setup_site_json() {
     }
 
     /* Common configuration */
+    INDEX_JSON = undefined;
     SOURCE_DIR = path.dirname(SITE_JSON_NAME);
     DEST_DIR = path.resolve(SOURCE_DIR, SITE_JSON.dest || "./");
 
