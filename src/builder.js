@@ -185,6 +185,7 @@ if (isExistDir(DEST_DIR) === false) {
 console.log(`Source directory: ${SOURCE_DIR}`);
 console.log(`Dest directory: ${DEST_DIR}`);
 /* START UP CHECK END */
+
 /* TEMPLETE START */
 /* html templete builder
    these code shuld more smart.*/
@@ -446,19 +447,24 @@ const convert_md = function convert_md(md_file) {
                     return new_page.source === page.source;
                 });
 
+                new_page.write = true;
+
+                /*If the page title is changed in HTML 5 mode, all pages are rewritten.*/
                 if (
-                    page_index === -1
-                    || new_pages[page_index].title !== new_page.title
+                    SITE_JSON.html5 === true
+                    && page_index > -1
+                    && new_pages[page_index].title !== new_page.title
                 ) {
                     new_pages.forEach(function (page) {
                         page.write = true;
                     });
-                } else {
-                    new_page.write = true;
                 }
 
-                // rewrite
-                new_pages[page_index] = new_page;
+                if (page_index === -1) {
+                    new_pages.push(new_page);
+                } else {
+                    new_pages[page_index] = new_page;
+                }
 
                 return new_pages;
             }
