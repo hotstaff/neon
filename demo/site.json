@@ -1,5 +1,7 @@
 {
 	"title": "NEON - Return to innocence",
 	"menutitle": "MENU",
-	"dest": "./"
+	"dest": "./",
+	"post_edit": "echo 'post_edit'",
+	"post_add": "echo 'post add'"
 }
