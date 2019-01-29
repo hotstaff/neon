@@ -147,43 +147,45 @@ function exec_script(command) {
 /* Common function end */
 
 /* START UP CHECK START */
+function setup_site_json() {
+    SITE_JSON = {};
+    SITE_JSON_NAME = path.resolve(process.argv[2]);
+    if (isExistFile(SITE_JSON_NAME) === false) {
+        if (isExistDir(SITE_JSON_NAME) === false) {
+            console.log("Not Found (site.json) input filename ->" + SITE_JSON_NAME);
+            process.exit(1);
+        }
+        SITE_JSON_NAME = path.resolve(SITE_JSON_NAME, "./site.json");
+    }
+
+    try {
+        SITE_JSON = JSON.parse(fs.readFileSync(SITE_JSON_NAME, "utf8"));
+    } catch (e) {
+        console.log("JSON Parse Error site.json");
+        console.log(e);
+        process.exit(1);
+    }
+
+    /* Common configuration */
+    SOURCE_DIR = path.dirname(SITE_JSON_NAME);
+    DEST_DIR = path.resolve(SOURCE_DIR, SITE_JSON.dest || "./");
+
+    /* Dest dir check */
+    if (isExistDir(DEST_DIR) === false) {
+        console.log(`Dest filename already exists. (${DEST_DIR})`);
+        process.exit(1);
+    }
+}
+
 if (process.argv.length < 3) {
     console.log("Please input site.json.");
     process.exit(1);
 }
 
-SITE_JSON_NAME = path.resolve(process.argv[2]);
-SITE_JSON = {};
-
-/* Read SITE.json */
-if (isExistFile(SITE_JSON_NAME) === false) {
-    if (isExistDir(SITE_JSON_NAME) === false) {
-        console.log("Not Found (site.json) input filename ->" + SITE_JSON_NAME);
-        process.exit(1);
-    }
-    SITE_JSON_NAME = path.resolve(SITE_JSON_NAME, "./site.json");
-}
-
-
-try {
-    SITE_JSON = JSON.parse(fs.readFileSync(SITE_JSON_NAME, "utf8"));
-} catch (e) {
-    console.log("JSON Parse Error site.json");
-    console.log(e);
-    process.exit(1);
-}
-
-/* Common configuration */
-SOURCE_DIR = path.dirname(SITE_JSON_NAME);
-DEST_DIR = path.resolve(SOURCE_DIR, SITE_JSON.dest || "./");
-
-/* Dest dir check */
-if (isExistDir(DEST_DIR) === false) {
-    console.log(`Dest filename already exists. (${DEST_DIR})`);
-    process.exit(1);
-}
+setup_site_json();
 console.log(`Source directory: ${SOURCE_DIR}`);
 console.log(`Dest directory: ${DEST_DIR}`);
+
 /* START UP CHECK END */
 
 /* TEMPLETE START */
@@ -654,6 +656,7 @@ watcher.on("ready", function () {
 
         if (file_path === SITE_JSON_NAME) {
             console.log(file_path + " changed.");
+            setup_site_json();
             build();
         }
     });
