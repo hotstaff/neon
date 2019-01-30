@@ -92,7 +92,7 @@ function isExistFile(file) {
     try {
         stat = fs.statSync(file);
     } catch (err) {
-        console.log(err);
+        console.error(err);
         return false;
     }
 
@@ -110,7 +110,7 @@ function isExistDir(dirname, creation = true) {
         stat = fs.statSync(dirname);
     } catch (err) {
         if (err.code !== "ENOENT") {
-            console.log(err);
+            console.error(err);
             return false;
         }
     }
@@ -138,7 +138,7 @@ function exec_script(command) {
         console.log("exec: " + command);
         exec(command, function (err, stdout) {
             if (err) {
-                console.log(err);
+                console.error(err);
             }
             console.log(stdout);
         });
@@ -162,9 +162,8 @@ function setup_site_json() {
 
     try {
         SITE_JSON = JSON.parse(fs.readFileSync(SITE_JSON_NAME, "utf8"));
-    } catch (e) {
+    } catch () {
         console.log("JSON Parse Error site.json");
-        console.log(e);
         process.exit(1);
     }
 
@@ -627,7 +626,6 @@ const build = function build(md_file) {
     ).catch(
         function onRejected(err) {
             console.error(err);
-            // console.log("Stop");
             process.exit(1);
         }
     );
