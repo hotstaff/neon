@@ -199,9 +199,9 @@ console.log(`Dest directory: ${DEST_DIR}`);
 const construct_index_html = function construct_index_html() {
     return `${CONST_DOCTYPE_AND_META_HTML4}
 <title>${SITE_JSON.title}</title>
-<frameset cols="20%,80%" frameborder="no" border="0">
-  <frame src="menu.html">
-  <frame src="top.html" name="top">
+<frameset cols="20%,80%">
+  <frame src="menu.html" frameborder="0">
+  <frame src="top.html" name="top" frameborder="0">
 </frameset>`;
 };
 
