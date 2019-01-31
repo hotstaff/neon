@@ -6,11 +6,13 @@
 /*jslint
     node, devel, bitwise, long
 */
-
 "use strict";
 
 /* Consts */
-const CONST_DOCTYPE_AND_META = `<!DOCTYPE html>
+const CONST_DOCTYPE_AND_META_HTML4 = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta name="generator" content="neon">`;
+const CONST_DOCTYPE_AND_META_HTML5 = `<!doctype html>
 <meta charset="UTF-8">
 <meta name="generator" content="neon">`;
 
@@ -162,8 +164,9 @@ function setup_site_json() {
 
     try {
         SITE_JSON = JSON.parse(fs.readFileSync(SITE_JSON_NAME, "utf8"));
-    } catch () {
+    } catch (e) {
         console.log("JSON Parse Error site.json");
+        console.error(e);
         process.exit(1);
     }
 
@@ -194,7 +197,7 @@ console.log(`Dest directory: ${DEST_DIR}`);
 /* html templete builder
    these code shuld more smart.*/
 const construct_index_html = function construct_index_html() {
-    return `${CONST_DOCTYPE_AND_META}
+    return `${CONST_DOCTYPE_AND_META_HTML4}
 <title>${SITE_JSON.title}</title>
 <frameset cols="20%,80%" frameborder="no" border="0">
   <frame src="menu.html">
@@ -217,8 +220,7 @@ const construct_menu_html = function construct_menu_html(index_json) {
         );
     });
 
-    return `${CONST_DOCTYPE_AND_META}
-${SITE_JSON.menu_head || SITE_JSON.head || ""}
+    return `${CONST_DOCTYPE_AND_META_HTML4}${SITE_JSON.menu_head || SITE_JSON.head || ""}
 <title>menu</title>
 <center>
 <hr>
@@ -237,7 +239,7 @@ const construct_page_html = function construct_page_html(md_html) {
         ? CONST_HIGHTLIGHT_TAG
         : ""
     );
-    return `${CONST_DOCTYPE_AND_META}${SITE_JSON.page_head || SITE_JSON.head || ""}
+    return `${CONST_DOCTYPE_AND_META_HTML4}${SITE_JSON.page_head || SITE_JSON.head || ""}
 ${highlight_tag}${md_html}
 `;
 };
@@ -280,8 +282,7 @@ const construct_page_html5 = function construct_page_html5(md_html, nav_html) {
         ? CONST_HIGHTLIGHT_TAG
         : ""
     );
-    return `${CONST_DOCTYPE_AND_META}
-${SITE_JSON.page_head || SITE_JSON.head || ""}
+    return `${CONST_DOCTYPE_AND_META_HTML5}${SITE_JSON.page_head || SITE_JSON.head || ""}
 ${highlight_tag}
 <body>${nav_html}
 <main>
