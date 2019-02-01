@@ -9,11 +9,11 @@
 "use strict";
 
 /* Consts */
-const CONST_DOCTYPE_AND_META_HTML4 = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+const CONST_DOCTYPE_HTML4 = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">`;
+const CONST_DOCTYPE_HTML5 = `<!doctype html>`;
+const CONST_META_HTML4 = `<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta name="generator" content="neon">`;
-const CONST_DOCTYPE_AND_META_HTML5 = `<!doctype html>
-<meta charset="UTF-8">
+const CONST_META_HTML5 = `<meta charset="UTF-8">
 <meta name="generator" content="neon">`;
 
 const CONST_HIGHTLIGHT_TAG = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/monokai-sublime.min.css">
@@ -196,8 +196,58 @@ console.log(`Dest directory: ${DEST_DIR}`);
 /* TEMPLETE START */
 /* html templete builder
    these code shuld more smart.*/
+
+const highlight_tag = function highlight_tag(md_html) {
+    if (md_html.match("class=\"hljs\"")) {
+        return CONST_HIGHTLIGHT_TAG;
+    }
+    return "";
+};
+
+const link_tag = function link_tag() {
+    /* link element  */
+    if (SITE_JSON.css === undefined) {
+        return "";
+    }
+
+    if (typeof SITE_JSON.css === "string") {
+        return `<link href="${SITE_JSON.css}" rel="stylesheet">`;
+    }
+
+    if (Array.isArray(SITE_JSON.css)) {
+        /* "" is initial value. see reduce document */
+        return SITE_JSON.css.reduce(
+            function (previous, css) {
+                return previous + `<link href="${css}" rel="stylesheet">` + "\n";
+            },
+            ""
+        );
+    }
+
+    return "";
+};
+
+const head_tag = function head_tag(title = "", plus_tag = "") {
+    var meta_tag = (
+        SITE_JSON.html5 === true
+        ? CONST_META_HTML5
+        : CONST_META_HTML4
+    );
+    var title_tag = (
+        (title === "" || title === undefined)
+        ? ""
+        : `<title>${title}</title>`
+    );
+    return `<head>
+${meta_tag}
+${title_tag}${link_tag()}${plus_tag}
+</head>`;
+};
+
+
 const construct_index_html = function construct_index_html() {
-    return `${CONST_DOCTYPE_AND_META_HTML4}
+    return `${CONST_DOCTYPE_HTML4}
+${CONST_META_HTML4}
 <title>${SITE_JSON.title}</title>
 <frameset cols="20%,80%">
   <frame src="menu.html" frameborder="0">
@@ -206,22 +256,19 @@ const construct_index_html = function construct_index_html() {
 };
 
 const construct_menu_html = function construct_menu_html(index_json) {
-    var pages = index_json.pages;
     var atags = "";
 
-    pages.forEach(function (page) {
+    index_json.pages.forEach(function (page) {
         if (page.source === "top.md") {
             return;
         }
         var link = page.source.replace(/.md/, ".html");
-        atags = (
-            atags + "<a href=\"" + link + "\" target=\"top\">"
-            + page.title + "</a><br><br>\n"
-        );
+        atags = atags + `<a href="${link}" target="top">${page.title}</a><br><br>` + "\n";
     });
 
-    return `${CONST_DOCTYPE_AND_META_HTML4}${SITE_JSON.menu_head || SITE_JSON.head || ""}
-<title>menu</title>
+    return `${CONST_DOCTYPE_HTML4}
+${head_tag("Menu", (SITE_JSON.menu_head || SITE_JSON.head || ""))}
+<body>
 <center>
 <hr>
 <h2>${SITE_JSON.menutitle || "MENU"}</h2>
@@ -230,36 +277,28 @@ const construct_menu_html = function construct_menu_html(index_json) {
 ${atags}<hr>
 <a href="top.html" target="top">${SITE_JSON.toptitle || "TOP"}</a><br>
 </center>
+</body>
 `;
 };
 
 const construct_page_html = function construct_page_html(md_html) {
-    var highlight_tag = (
-        md_html.match("class=\"hljs\"")
-        ? CONST_HIGHTLIGHT_TAG
-        : ""
-    );
-    return `${CONST_DOCTYPE_AND_META_HTML4}${SITE_JSON.page_head || SITE_JSON.head || ""}
-${highlight_tag}${md_html}
+    var head = head_tag("", highlight_tag(md_html) + (SITE_JSON.page_head || SITE_JSON.head || ""));
+    return `${CONST_DOCTYPE_HTML4}
+${head}
+${md_html}
 `;
 };
 
 /* html 5*/
-
 const construct_menu_html5 = function construct_menu_html5(index_json) {
-    var pages = index_json.pages;
     var litags = "";
 
-    pages.forEach(function (page) {
+    index_json.pages.forEach(function (page) {
         if (page.source === "top.md") {
             return;
         }
         var link = page.source.replace(/.md/, ".html");
-        litags = (
-            litags + "<li><a href=\"" + link + "\">"
-            + "<i class=\"fa fa-file-text fa-fw\"></i>"
-            + "<span>" + page.title + "</span></a></li>\n"
-        );
+        litags = litags + `<li><a href="${link}"><i class="fa fa-file-text fa-fw"></i><span>${page.title}</span></a></li>` + "\n";
     });
 
     return `
@@ -272,18 +311,13 @@ ${litags}<li class="control">
 </li>
 </ul>
 </nav>
-</div>
-`;
+</div>`;
 };
 
 const construct_page_html5 = function construct_page_html5(md_html, nav_html) {
-    var highlight_tag = (
-        md_html.match("class=\"hljs\"")
-        ? CONST_HIGHTLIGHT_TAG
-        : ""
-    );
-    return `${CONST_DOCTYPE_AND_META_HTML5}${SITE_JSON.page_head || SITE_JSON.head || ""}
-${highlight_tag}
+    var head = head_tag("", highlight_tag(md_html) + (SITE_JSON.page_head || SITE_JSON.head || ""));
+    return `${CONST_DOCTYPE_HTML5}
+${head}
 <body>${nav_html}
 <main>
 ${md_html}</main>
@@ -291,6 +325,7 @@ ${md_html}</main>
 `;
 };
 
+/* TEMPLETE END */
 
 const convert2html = function convert2html(file) {
     return new Promise(function (onFulfilled, onRejected) {
