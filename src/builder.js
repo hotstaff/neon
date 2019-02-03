@@ -65,6 +65,7 @@ MD.use(
 );
 
 const gm = require("gm");
+const pretty = require("pretty");
 
 /* Global defines */
 var SITE_JSON_NAME;
@@ -137,7 +138,7 @@ function isExistDir(dirname, creation = true) {
 
 function exec_script(command) {
     if (command !== null) {
-        console.log("exec: " + command);
+        console.log("Exec: " + command);
         exec(command, function (err, stdout) {
             if (err) {
                 console.error(err);
@@ -152,7 +153,9 @@ function exec_script(command) {
 
 /* START UP CHECK START */
 function setup_site_json() {
+    /* Reset SITE_JSON */
     SITE_JSON = {};
+
     SITE_JSON_NAME = path.resolve(process.argv[2]);
     if (isExistFile(SITE_JSON_NAME) === false) {
         if (isExistDir(SITE_JSON_NAME) === false) {
@@ -244,14 +247,13 @@ ${title_tag}${link_tag()}${plus_tag}
 </head>`;
 };
 
-
 const construct_index_html = function construct_index_html() {
     return `${CONST_DOCTYPE_HTML4}
 ${CONST_META_HTML4}
 <title>${SITE_JSON.title}</title>
 <frameset cols="20%,80%">
-  <frame src="menu.html" frameborder="0">
-  <frame src="top.html" name="top" frameborder="0">
+<frame src="menu.html" frameborder="0">
+<frame src="top.html" name="top" frameborder="0">
 </frameset>`;
 };
 
@@ -281,11 +283,11 @@ ${atags}<hr>
 `;
 };
 
-const construct_page_html = function construct_page_html(md_html) {
-    var head = head_tag("", highlight_tag(md_html) + (SITE_JSON.page_head || SITE_JSON.head || ""));
+const construct_page_html = function construct_page_html(page) {
+    var head = head_tag(page.title, highlight_tag(page.contents) + (SITE_JSON.page_head || SITE_JSON.head || ""));
     return `${CONST_DOCTYPE_HTML4}
 ${head}
-${md_html}
+${page.contents}
 `;
 };
 
@@ -314,13 +316,13 @@ ${litags}<li class="control">
 </div>`;
 };
 
-const construct_page_html5 = function construct_page_html5(md_html, nav_html) {
-    var head = head_tag("", highlight_tag(md_html) + (SITE_JSON.page_head || SITE_JSON.head || ""));
+const construct_page_html5 = function construct_page_html5(page, nav_html) {
+    var head = head_tag(page.title, highlight_tag(page.contents) + (SITE_JSON.page_head || SITE_JSON.head || ""));
     return `${CONST_DOCTYPE_HTML5}
 ${head}
 <body>${nav_html}
 <main>
-${md_html}</main>
+${page.contents}</main>
 </body>
 `;
 };
@@ -524,6 +526,9 @@ const convert_md = function convert_md(md_file) {
 
 const write_html = function write_html(fname, html_text) {
     return new Promise(function (onFulfilled, onRejected) {
+        if (SITE_JSON.pretty === true) {
+            html_text = pretty(html_text);
+        }
         fs.writeFile(fname, html_text, function (err) {
             if (err) {
                 return onRejected(err);
@@ -544,7 +549,7 @@ const write_pages = function write_pages(index_json) {
                     promises.push(
                         write_html(
                             path.resolve(DEST_DIR, page.source.replace(/.md/, ".html")),
-                            construct_page_html(page.contents)
+                            construct_page_html(page)
                         )
                     );
                 }
@@ -567,7 +572,7 @@ const write_pages = function write_pages(index_json) {
             var nav_html = construct_menu_html5(index_json);
             index_json.pages.forEach(function (page) {
                 var page_html = construct_page_html5(
-                    page.contents,
+                    page,
                     nav_html
                 );
 
