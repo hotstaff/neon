@@ -11,10 +11,10 @@
 		"head": "(String) A string to append into the <head></head>. Example: <meta name=\"viewport\" content=\"width=768\">.",
 		"html5": "(true or false) Correspond to html 5.",
 		"pretty": "(true or false) Whether to format html and output it."
-		},
+	},
 	"title": "NEON - Return to innocence",
 	"menutitle": "MENU",
 	"dest": "./",
 	"post_add": "echo 'post add'",
-	"post_edit": "echo 'post_edit'",
+	"post_edit": "echo 'post_edit'"
 }
