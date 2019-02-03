@@ -1,7 +1,20 @@
 {
+	"//": "The key starting with // are comments. It is not necessary for setting.",
+	"//OPTIONS": {
+		"title": "(String) Site title.",
+		"menutitle": "(String) Menu title",
+		"toptitle": "(String) The title of the link back to the top page",
+		"dest": "(String) A folder to output .html files",
+		"post_add": "(String) Command executed when .md file is added.",
+		"post_edit": "(String) Command executed when .md file is edited.",
+		"css": "(String or Array) Array or String of css file paths that need to be read in <head></head>",
+		"head": "(String) A string to append into the <head></head>. Example: <meta name=\"viewport\" content=\"width=768\">.",
+		"html5": "(true or false) Correspond to html 5.",
+		"pretty": "(true or false) Whether to format html and output it."
+		},
 	"title": "NEON - Return to innocence",
 	"menutitle": "MENU",
 	"dest": "./",
+	"post_add": "echo 'post add'",
 	"post_edit": "echo 'post_edit'",
-	"post_add": "echo 'post add'"
 }
