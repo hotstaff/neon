@@ -201,33 +201,49 @@ console.log(`Dest directory: ${DEST_DIR}`);
    these code shuld more smart.*/
 
 const highlight_tag = function highlight_tag(md_html) {
-    if (md_html.match("class=\"hljs\"")) {
-        return CONST_HIGHTLIGHT_TAG;
+    if (md_html.match("class=\"hljs")) {
+        return CONST_HIGHTLIGHT_TAG + "\n";
     }
     return "";
 };
 
 const link_tag = function link_tag() {
     /* link element  */
-    if (SITE_JSON.css === undefined) {
-        return "";
+    var link_tag = "";
+    if (SITE_JSON.css !== undefined) {
+
+        if (typeof SITE_JSON.css === "string") {
+            link_tag = link_tag + `<link href="${SITE_JSON.css}" rel="stylesheet">\n`;
+        }
+
+        if (Array.isArray(SITE_JSON.css)) {
+            /* "" is initial value. see reduce document */
+            link_tag = link_tag + SITE_JSON.css.reduce(
+                function (previous, css) {
+                    return previous + `<link href="${css}" rel="stylesheet">` + "\n";
+                },
+                ""
+            );
+        }
     }
 
-    if (typeof SITE_JSON.css === "string") {
-        return `<link href="${SITE_JSON.css}" rel="stylesheet">`;
+    if (SITE_JSON.async_css !== undefined) {
+
+        if (typeof SITE_JSON.async_css === "string") {
+            link_tag = link_tag + `<link href="${SITE_JSON.async_css}" rel="stylesheet">\n`;
+        }
+
+        if (Array.isArray(SITE_JSON.async_css)) {
+            link_tag = link_tag + SITE_JSON.async_css.reduce(
+                function (previous, css) {
+                    return previous + `<link rel="preload" as="style"  href="${css}" type="text/css" media="all" onload="this.rel='stylesheet'">\n`;
+                },
+                ""
+            );
+        }
     }
 
-    if (Array.isArray(SITE_JSON.css)) {
-        /* "" is initial value. see reduce document */
-        return SITE_JSON.css.reduce(
-            function (previous, css) {
-                return previous + `<link href="${css}" rel="stylesheet">` + "\n";
-            },
-            ""
-        );
-    }
-
-    return "";
+    return link_tag;
 };
 
 const head_tag = function head_tag(title = "", plus_tag = "") {
@@ -317,7 +333,7 @@ ${litags}<li class="control">
 };
 
 const construct_page_html5 = function construct_page_html5(page, nav_html) {
-    var head = head_tag(page.title, highlight_tag(page.contents) + (SITE_JSON.page_head || SITE_JSON.head || ""));
+    var head = head_tag(page.title, highlight_tag(page.contents) +  (SITE_JSON.page_head || SITE_JSON.head || ""));
     return `${CONST_DOCTYPE_HTML5}
 ${head}
 <body>${nav_html}
