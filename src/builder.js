@@ -18,7 +18,11 @@ const CONST_META_HTML5 = `<meta charset="UTF-8">
 
 const CONST_HIGHTLIGHT_TAG = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/monokai-sublime.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>`;
+<script>
+window.addEventListener("DOMContentLoaded", function() {  
+    hljs.initHighlightingOnLoad();
+}, false)
+</script>`;
 
 /* Import */
 const chokidar = require("chokidar");
