@@ -19,9 +19,9 @@ const CONST_META_HTML5 = `<meta charset="UTF-8">
 const CONST_HIGHTLIGHT_TAG = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/monokai-sublime.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
 <script>
-window.addEventListener("DOMContentLoaded", function() {  
+window.addEventListener("DOMContentLoaded", function() {
     hljs.initHighlightingOnLoad();
-}, false)
+}, false);
 </script>`;
 
 /* Import */
@@ -99,7 +99,9 @@ function isExistFile(file) {
     try {
         stat = fs.statSync(file);
     } catch (err) {
-        console.error(err);
+        if (err.code !== "ENOENT") {
+            console.error(err);
+        }
         return false;
     }
 
@@ -213,16 +215,16 @@ const highlight_tag = function highlight_tag(md_html) {
 
 const link_tag = function link_tag() {
     /* link element  */
-    var link_tag = "";
+    var tag = "";
     if (SITE_JSON.css !== undefined) {
 
         if (typeof SITE_JSON.css === "string") {
-            link_tag = link_tag + `<link href="${SITE_JSON.css}" rel="stylesheet">\n`;
+            tag = tag + `<link href="${SITE_JSON.css}" rel="stylesheet">` + "\n";
         }
 
         if (Array.isArray(SITE_JSON.css)) {
             /* "" is initial value. see reduce document */
-            link_tag = link_tag + SITE_JSON.css.reduce(
+            tag = tag + SITE_JSON.css.reduce(
                 function (previous, css) {
                     return previous + `<link href="${css}" rel="stylesheet">` + "\n";
                 },
@@ -234,20 +236,20 @@ const link_tag = function link_tag() {
     if (SITE_JSON.async_css !== undefined) {
 
         if (typeof SITE_JSON.async_css === "string") {
-            link_tag = link_tag + `<link href="${SITE_JSON.async_css}" rel="stylesheet">\n`;
+            tag = tag + `<link href="${SITE_JSON.async_css}" rel="stylesheet">` + "\n";
         }
 
         if (Array.isArray(SITE_JSON.async_css)) {
-            link_tag = link_tag + SITE_JSON.async_css.reduce(
+            tag = tag + SITE_JSON.async_css.reduce(
                 function (previous, css) {
-                    return previous + `<link rel="preload" as="style"  href="${css}" type="text/css" media="all" onload="this.rel='stylesheet'">\n`;
+                    return previous + `<link rel="preload" as="style"  href="${css}" type="text/css" media="all" onload="this.rel='stylesheet'">` + "\n";
                 },
                 ""
             );
         }
     }
 
-    return link_tag;
+    return tag;
 };
 
 const head_tag = function head_tag(title = "", plus_tag = "") {
@@ -337,7 +339,7 @@ ${litags}<li class="control">
 };
 
 const construct_page_html5 = function construct_page_html5(page, nav_html) {
-    var head = head_tag(page.title, highlight_tag(page.contents) +  (SITE_JSON.page_head || SITE_JSON.head || ""));
+    var head = head_tag(page.title, highlight_tag(page.contents) + (SITE_JSON.page_head || SITE_JSON.head || ""));
     return `${CONST_DOCTYPE_HTML5}
 ${head}
 <body>${nav_html}
