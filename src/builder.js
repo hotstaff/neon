@@ -34,7 +34,8 @@ const OPTIONS_MINIFY ={
     removeEmptyAttributes: true,
     removeAttributeQuotes: true,
     minifyCSS: true,
-    minifyJS: true
+    minifyJS: true,
+    html5: false
 }
 
 /* Import */
@@ -203,6 +204,14 @@ function setup_site_json() {
         console.log(`Dest filename already exists. (${DEST_DIR})`);
         process.exit(1);
     }
+
+    /* Option switches */
+    if (SITE_JSON.minify === true || SITE_JSON.html5 === true){
+        OPTIONS_MINIFY.html5 = true;
+    }else{
+        OPTIONS_MINIFY.html5 = false;
+    }
+
 }
 
 if (process.argv.length < 3) {
