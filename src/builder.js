@@ -26,7 +26,7 @@ window.addEventListener("DOMContentLoaded", function() {
 
 /*OPTIONS*/
 
-const OPTIONS_MINIFY ={
+const OPTIONS_MINIFY = {
     collapseWhitespace: true,
     removeComments: true,
     removeOptionalTags: true,
@@ -36,7 +36,7 @@ const OPTIONS_MINIFY ={
     minifyCSS: true,
     minifyJS: true,
     html5: false
-}
+};
 
 /* Import */
 const chokidar = require("chokidar");
@@ -84,7 +84,7 @@ MD.use(
 
 const gm = require("gm");
 const pretty = require("pretty");
-const minify = require('html-minifier').minify;
+const minify = require("html-minifier").minify;
 
 /* Global defines */
 var SITE_JSON_NAME;
@@ -206,9 +206,9 @@ function setup_site_json() {
     }
 
     /* Option switches */
-    if (SITE_JSON.minify === true || SITE_JSON.html5 === true){
+    if (SITE_JSON.minify === true || SITE_JSON.html5 === true) {
         OPTIONS_MINIFY.html5 = true;
-    }else{
+    } else {
         OPTIONS_MINIFY.html5 = false;
     }
 
@@ -239,6 +239,7 @@ const highlight_tag = function highlight_tag(md_html) {
 const link_tag = function link_tag() {
     /* link element  */
     var tag = "";
+    var css_path = "";
     if (SITE_JSON.css !== undefined) {
 
         if (typeof SITE_JSON.css === "string") {
@@ -250,6 +251,28 @@ const link_tag = function link_tag() {
             tag = tag + SITE_JSON.css.reduce(
                 function (previous, css) {
                     return previous + `<link href="${css}" rel="stylesheet">` + "\n";
+                },
+                ""
+            );
+        }
+    }
+
+    if (SITE_JSON.payload_css !== undefined) {
+
+        if (typeof SITE_JSON.payload_css === "string") {
+            css_path = path.resolve(SOURCE_DIR, SITE_JSON.payload_css);
+            if (isExistFile(css_path)) {
+                tag = tag + `<style>"${fs.readFileSync(css_path)}</style>` + "\n";
+            }
+        }
+
+        if (Array.isArray(SITE_JSON.payload_css)) {
+            tag = tag + SITE_JSON.payload_css.reduce(
+                function (previous, css) {
+                    css_path = path.resolve(SOURCE_DIR, css);
+                    if (isExistFile(css_path)) {
+                        return previous + `<style>${fs.readFileSync(css_path)}</style>` + "\n";
+                    }
                 },
                 ""
             );
@@ -571,9 +594,9 @@ const convert_md = function convert_md(md_file) {
 
 const write_html = function write_html(fname, html_text) {
     return new Promise(function (onFulfilled, onRejected) {
-        if (SITE_JSON.pretty === true) {            
+        if (SITE_JSON.pretty === true) {
             html_text = pretty(html_text);
-        }else if (SITE_JSON.minify === true) {
+        } else if (SITE_JSON.minify === true) {
             html_text = minify(html_text, OPTIONS_MINIFY);
         }
 
