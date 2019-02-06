@@ -24,6 +24,19 @@ window.addEventListener("DOMContentLoaded", function() {
 }, false);
 </script>`;
 
+/*OPTIONS*/
+
+const OPTIONS_MINIFY ={
+    collapseWhitespace: true,
+    removeComments: true,
+    removeOptionalTags: true,
+    removeRedundantAttributes: true,
+    removeEmptyAttributes: true,
+    removeAttributeQuotes: true,
+    minifyCSS: true,
+    minifyJS: true
+}
+
 /* Import */
 const chokidar = require("chokidar");
 const fs = require("fs");
@@ -70,6 +83,7 @@ MD.use(
 
 const gm = require("gm");
 const pretty = require("pretty");
+const minify = require('html-minifier').minify;
 
 /* Global defines */
 var SITE_JSON_NAME;
@@ -548,9 +562,12 @@ const convert_md = function convert_md(md_file) {
 
 const write_html = function write_html(fname, html_text) {
     return new Promise(function (onFulfilled, onRejected) {
-        if (SITE_JSON.pretty === true) {
+        if (SITE_JSON.pretty === true) {            
             html_text = pretty(html_text);
+        }else if (SITE_JSON.minify === true) {
+            html_text = minify(html_text, OPTIONS_MINIFY);
         }
+
         fs.writeFile(fname, html_text, function (err) {
             if (err) {
                 return onRejected(err);

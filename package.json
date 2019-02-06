@@ -16,6 +16,7 @@
     "chokidar": "^2.0.4",
     "gm": "^1.23.1",
     "highlight.js": "^9.13.1",
+    "html-minifier": "^3.5.21",
     "markdown-it": "^8.4.1",
     "markdown-it-abbr": "^1.0.4",
     "markdown-it-container": "^2.0.0",
