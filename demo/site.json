@@ -8,9 +8,12 @@
 		"post_add": "(String) Command executed when .md file is added.",
 		"post_edit": "(String) Command executed when .md file is edited.",
 		"css": "(String or Array) Array or String of css file paths that need to be read in <head></head>",
+		"async_css": "(String or Array) Array or String of css file paths that after DOM loading.",
+		"payload_css": "(String or Array) Array or String of css file paths that needs <style></style> in <head> .",
 		"head": "(String) A string to append into the <head></head>. Example: <meta name=\"viewport\" content=\"width=768\">.",
 		"html5": "(true or false) Correspond to html 5.",
-		"pretty": "(true or false) Whether to format html and output it."
+		"pretty": "(true or false) Whether to format html and output it.",
+		"minify": "(true or false) Whether to format html and output it."
 	},
 	"title": "NEON - Return to innocence",
 	"menutitle": "MENU",
