@@ -1,14 +1,15 @@
-/*
- NEON - html builder
-    Wrote by Hideto Manjo 2018
-*/
+
+// NEON - html builder
+//     Wrote by Hideto Manjo 2018
 
 /*jslint
     node, devel, bitwise, long
 */
 "use strict";
 
-/* Consts */
+
+// Consts.
+
 const CONST_DOCTYPE_HTML4 = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">`;
 const CONST_DOCTYPE_HTML5 = `<!doctype html>`;
 const CONST_META_HTML4 = `<meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -24,7 +25,8 @@ window.addEventListener("DOMContentLoaded", function() {
 }, false);
 </script>`;
 
-/*OPTIONS*/
+
+// Options.
 
 const OPTIONS_MINIFY = {
     collapseWhitespace: true,
@@ -38,7 +40,9 @@ const OPTIONS_MINIFY = {
     html5: false
 };
 
-/* Import */
+
+// Imports.
+
 const chokidar = require("chokidar");
 const fs = require("fs");
 const path = require("path");
@@ -86,14 +90,18 @@ const gm = require("gm");
 const pretty = require("pretty");
 const minify = require("html-minifier").minify;
 
-/* Global defines */
+
+// Global defines.
+
 var SITE_JSON_NAME;
 var SITE_JSON;
 var INDEX_JSON;
 var SOURCE_DIR;
 var DEST_DIR;
 
-/* Instance */
+
+// Instance.
+
 var watcher;
 
 console.log(`
@@ -106,8 +114,10 @@ o88o    88  o888ooo8888  88ooo88  o88o    88
 
 `);
 
-/* Common function
-    Defined at parsing time. */
+
+// Common function
+// Defined at parsing time.
+
 function isExistFile(file) {
     var stat;
 
@@ -170,11 +180,15 @@ function exec_script(command) {
     }
     return false;
 }
-/* Common function end */
 
-/* START UP CHECK START */
+// COMMON FUNCTION END
+
+// START UP CHECK START
+
 function setup_site_json() {
-    /* Reset SITE_JSON */
+
+// Reset SITE_JSON.
+
     SITE_JSON = {};
 
     SITE_JSON_NAME = path.resolve(process.argv[2]);
@@ -194,18 +208,21 @@ function setup_site_json() {
         process.exit(1);
     }
 
-    /* Common configuration */
+// Common configuration.
+
     INDEX_JSON = undefined;
     SOURCE_DIR = path.dirname(SITE_JSON_NAME);
     DEST_DIR = path.resolve(SOURCE_DIR, SITE_JSON.dest || "./");
 
-    /* Dest dir check */
+// Dest dir check.
+
     if (isExistDir(DEST_DIR) === false) {
         console.log(`Dest filename already exists. (${DEST_DIR})`);
         process.exit(1);
     }
 
-    /* Option switches */
+// Option switches.
+
     if (SITE_JSON.minify === true || SITE_JSON.html5 === true) {
         OPTIONS_MINIFY.html5 = true;
     } else {
@@ -223,11 +240,39 @@ setup_site_json();
 console.log(`Source directory: ${SOURCE_DIR}`);
 console.log(`Dest directory: ${DEST_DIR}`);
 
-/* START UP CHECK END */
+// START UP CHECK END
 
-/* TEMPLETE START */
-/* html templete builder
-   these code shuld more smart.*/
+// TEMPLETE START
+
+// HTML templete builder
+//      these code shuld more smart.
+
+const for_each_tag = function for_each_tag(strings, values) {
+// Template function for html tag making
+
+//      strings[0] is head string.
+//      strings[1] is tail string.
+//      values is center string(String or Array or undefined).
+
+    if (values === undefined) {
+        return "";
+    }
+
+    if (typeof values === "string") {
+        return strings[0] + values + strings[1] + "\n";
+    }
+
+    if (Array.isArray(values)) {
+        return values.reduce(
+            function (previous, value) {
+                return previous + strings[0] + value + strings[1] + "\n";
+            },
+            ""
+        );
+    }
+
+    return "";
+};
 
 const highlight_tag = function highlight_tag(md_html) {
     if (md_html.match("class=\"hljs")) {
@@ -237,33 +282,18 @@ const highlight_tag = function highlight_tag(md_html) {
 };
 
 const link_tag = function link_tag() {
-    /* link element  */
+
+// Link element.
+
     var tag = "";
     var css_path = "";
-    if (SITE_JSON.css !== undefined) {
 
-        if (typeof SITE_JSON.css === "string") {
-            tag = tag + `<link href="${SITE_JSON.css}" rel="stylesheet">` + "\n";
-        }
-
-        if (Array.isArray(SITE_JSON.css)) {
-            /* "" is initial value. see reduce document */
-            tag = tag + SITE_JSON.css.reduce(
-                function (previous, css) {
-                    return previous + `<link href="${css}" rel="stylesheet">` + "\n";
-                },
-                ""
-            );
-        }
-    }
+    tag = tag + for_each_tag`<link href="${SITE_JSON.css}" rel="stylesheet">`;
 
     if (SITE_JSON.payload_css !== undefined) {
 
         if (typeof SITE_JSON.payload_css === "string") {
-            css_path = path.resolve(SOURCE_DIR, SITE_JSON.payload_css);
-            if (isExistFile(css_path)) {
-                tag = tag + `<style>"${fs.readFileSync(css_path)}</style>` + "\n";
-            }
+            tag = tag + `<style>"${fs.readFileSync(css_path)}</style>` + "\n";
         }
 
         if (Array.isArray(SITE_JSON.payload_css)) {
@@ -279,21 +309,7 @@ const link_tag = function link_tag() {
         }
     }
 
-    if (SITE_JSON.async_css !== undefined) {
-
-        if (typeof SITE_JSON.async_css === "string") {
-            tag = tag + `<link href="${SITE_JSON.async_css}" rel="stylesheet">` + "\n";
-        }
-
-        if (Array.isArray(SITE_JSON.async_css)) {
-            tag = tag + SITE_JSON.async_css.reduce(
-                function (previous, css) {
-                    return previous + `<link rel="preload" as="style"  href="${css}" type="text/css" media="all" onload="this.rel='stylesheet'">` + "\n";
-                },
-                ""
-            );
-        }
-    }
+    tag = tag + for_each_tag`<link rel="preload" as="style" href="${SITE_JSON.async_css}" type="text/css" media="all" onload="this.rel='stylesheet'">`;
 
     return tag;
 };
@@ -309,9 +325,12 @@ const head_tag = function head_tag(title = "", plus_tag = "") {
         ? ""
         : `<title>${title}</title>`
     );
+    var script_tag = for_each_tag`<script src="${SITE_JSON.js}"></script>`;
+
     return `<head>
 ${meta_tag}
-${title_tag}${link_tag()}${plus_tag}
+${title_tag}
+${link_tag()}${script_tag}${plus_tag}
 </head>`;
 };
 
@@ -359,7 +378,7 @@ ${page.contents}
 `;
 };
 
-/* html 5*/
+// html 5
 const construct_menu_html5 = function construct_menu_html5(index_json) {
     var litags = "";
 
@@ -395,7 +414,7 @@ ${page.contents}</main>
 `;
 };
 
-/* TEMPLETE END */
+// TEMPLETE END
 
 const convert2html = function convert2html(file) {
     return new Promise(function (onFulfilled, onRejected) {
@@ -438,10 +457,11 @@ const convert_image = function convert_image(file) {
     });
 };
 
-/*
-  extnames is array object.
-*/
+
 const obtain_files = function obtain_files(dirname, extnames) {
+
+// Extnames is array object.
+
     return new Promise(function (onFulfilled, onRejected) {
         fs.readdir(dirname, function (err, files) {
             var ret;
@@ -472,10 +492,9 @@ const obtain_markdown_files = function obtain_markdown_files(dirname) {
 const obtain_image_files = function obtain_image_files(dirname) {
     return obtain_files(dirname, [".jpg", ".png", ".gif"]);
 };
-/* TEMPLETE END */
+// TEMPLETE END
 
-
-/* MAIN FUNCTION STARTS */
+// MAIN FUNCTION STARTS
 
 const construct_index_json = function construct_index_json(pages) {
     return new Promise(function (onFulfilled) {
@@ -559,7 +578,8 @@ const convert_md = function convert_md(md_file) {
 
                 new_page.write = true;
 
-                /*If the page title is changed in HTML 5 mode, all pages are rewritten.*/
+// If the page title is changed in HTML 5 mode, all pages are rewritten.
+
                 if (
                     SITE_JSON.html5 === true
                     && page_index > -1
@@ -685,9 +705,10 @@ const post_script = function post_script(name) {
     return exec_script(SITE_JSON["post_" + name] || null);
 };
 
-/* MAIN FUNCTION END */
+// MAIN FUNCTION END
 
-/* Main sequence */
+// MAIN SEQUENCE
+
 const build = function build(md_file) {
     var start_time = Date.now();
 
@@ -746,7 +767,9 @@ const build = function build(md_file) {
 
 build();
 
-/* EVENT WATCHER START */
+
+// EVENT WATCHER START
+
 watcher = chokidar.watch([SOURCE_DIR, SITE_JSON_NAME], {
     ignored: /[\/\\]\./,
     persistent: true
@@ -778,4 +801,5 @@ watcher.on("ready", function () {
         console.error(error);
     });
 });
-/* EVENT WATCHER END */
+
+// EVENT WATCHER END
