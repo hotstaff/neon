@@ -391,9 +391,9 @@ const construct_menu_html5 = function construct_menu_html5(index_json) {
     });
 
     return `
-<div class="sidebar">
+<div class="menu">
 <header>${SITE_JSON.menutitle || "MENU"}</header>
-<nav class="sidebar_nav">
+<nav class="menu_nav">
 <ul>
 ${litags}<li class="control">
 <a href="top.html"><i class="fa fa-home fa-fw"></i><span class="">${SITE_JSON.toptitle || "TOP"}</span></a>
