@@ -1,4 +1,4 @@
-
+#!/usr/bin/env node
 // NEON - html builder
 //     Wrote by Hideto Manjo 2018
 

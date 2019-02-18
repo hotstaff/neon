@@ -2,7 +2,6 @@
   "name": "neon",
   "version": "0.0.2",
   "description": "Fast html builder.",
-  "main": "src/builder.js",
   "bin": {
     "neon": "src/builder.js"
   },
