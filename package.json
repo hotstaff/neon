@@ -13,6 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "chokidar": "^2.0.4",
+    "comander": "0.0.1-security",
     "gm": "^1.23.1",
     "highlight.js": "^9.13.1",
     "html-minifier": "^3.5.21",

@@ -43,6 +43,7 @@ const OPTIONS_MINIFY = {
 
 // Imports.
 
+const program = require('commander');
 const chokidar = require("chokidar");
 const fs = require("fs");
 const path = require("path");
@@ -104,16 +105,6 @@ var DEST_DIR;
 
 var watcher;
 
-console.log(`
-
-oooo   oooo ooooooooooo  ooooooo  oooo   oooo
- 8888o  88   888    88 o888   888o 8888o  88
- 88 888o88   888ooo8   888     888 88 888o88
- 88   8888   888    oo 888o   o888 88   8888
-o88o    88  o888ooo8888  88ooo88  o88o    88
-
-`);
-
 
 // Common function
 // Defined at parsing time.
@@ -125,7 +116,6 @@ function isExistFile(file) {
         stat = fs.statSync(file);
     } catch (err) {
         if (err.code !== "ENOENT") {
-            console.error(err);
         }
         return false;
     }
@@ -143,8 +133,7 @@ function isExistDir(dirname, creation = true) {
     try {
         stat = fs.statSync(dirname);
     } catch (err) {
-        if (err.code !== "ENOENT") {
-            console.error(err);
+        if (creation === false || err.code !== "ENOENT") {
             return false;
         }
     }
@@ -191,10 +180,9 @@ function setup_site_json() {
 
     SITE_JSON = {};
 
-    SITE_JSON_NAME = path.resolve(process.argv[2]);
     if (isExistFile(SITE_JSON_NAME) === false) {
-        if (isExistDir(SITE_JSON_NAME) === false) {
-            console.log("Not Found (site.json) input filename ->" + SITE_JSON_NAME);
+        if (isExistDir(SITE_JSON_NAME, false) === false) {
+            console.log("Read error of site.json.\n input path -> " + SITE_JSON_NAME);
             process.exit(1);
         }
         SITE_JSON_NAME = path.resolve(SITE_JSON_NAME, "./site.json");
@@ -203,7 +191,7 @@ function setup_site_json() {
     try {
         SITE_JSON = JSON.parse(fs.readFileSync(SITE_JSON_NAME, "utf8"));
     } catch (e) {
-        console.log("JSON Parse Error site.json");
+        console.log("Parse error of site.json");
         console.error(e);
         process.exit(1);
     }
@@ -231,12 +219,33 @@ function setup_site_json() {
 
 }
 
-if (process.argv.length < 3) {
+program.arguments('<site.json>')
+    .option('--no-watch', 'no watching')
+    .action( function(file) {
+            SITE_JSON_NAME = path.resolve(file);
+        }
+    );
+
+program.parse(process.argv);
+
+if(typeof SITE_JSON_NAME === "undefined") {
     console.log("Please input site.json.");
+    console.log(program.helpInformation());
     process.exit(1);
 }
 
+console.log(`
+
+oooo   oooo ooooooooooo  ooooooo  oooo   oooo
+ 8888o  88   888    88 o888   888o 8888o  88
+ 88 888o88   888ooo8   888     888 88 888o88
+ 88   8888   888    oo 888o   o888 88   8888
+o88o    88  o888ooo8888  88ooo88  o88o    88
+
+`);
+
 setup_site_json();
+console.log(`Site JSON path; ${SITE_JSON_NAME}`);
 console.log(`Source directory: ${SOURCE_DIR}`);
 console.log(`Dest directory: ${DEST_DIR}`);
 
@@ -770,36 +779,37 @@ build();
 
 // EVENT WATCHER START
 
-watcher = chokidar.watch([SOURCE_DIR, SITE_JSON_NAME], {
-    ignored: /[\/\\]\./,
-    persistent: true
-});
-
-watcher.on("ready", function () {
-
-    watcher.on("add", function (file_path) {
-        if (path.extname(file_path) === ".md") {
-            console.log(file_path + " added.");
-            build();
-        }
+if (program.watch) {
+    watcher = chokidar.watch([SOURCE_DIR, SITE_JSON_NAME], {
+        ignored: /[\/\\]\./,
+        persistent: true
     });
 
-    watcher.on("change", function (file_path) {
-        if (path.extname(file_path) === ".md") {
-            console.log(file_path + " changed.");
-            build(file_path);
-        }
+    watcher.on("ready", function () {
 
-        if (file_path === SITE_JSON_NAME) {
-            console.log(file_path + " changed.");
-            setup_site_json();
-            build();
-        }
+        watcher.on("add", function (file_path) {
+            if (path.extname(file_path) === ".md") {
+                console.log(file_path + " added.");
+                build();
+            }
+        });
+
+        watcher.on("change", function (file_path) {
+            if (path.extname(file_path) === ".md") {
+                console.log(file_path + " changed.");
+                build(file_path);
+            }
+
+            if (file_path === SITE_JSON_NAME) {
+                console.log(file_path + " changed.");
+                setup_site_json();
+                build();
+            }
+        });
+
+        watcher.on("error", function (error) {
+            console.error(error);
+        });
     });
-
-    watcher.on("error", function (error) {
-        console.error(error);
-    });
-});
-
+}
 // EVENT WATCHER END
