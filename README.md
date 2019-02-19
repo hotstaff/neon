@@ -32,12 +32,21 @@ git clone --depth=1 https://github.com/hotstaff/neon.git
 cd neon
 npm install
 ```
+管理者権限が必要になる場合は適宜sudoをお使いください。
+
+#### シェルコマンドへインストールする場合
+
+シェルのコマンドへneonを追加する場合はグローバル環境へインストールしてください。
+```bash
+npm install -g
+```
 
 ## デモページのビルド
 
 ```
 npm run demo-build
 ```
+
 
 ## プルリクエストについて
 
