@@ -222,7 +222,7 @@ function setup_site_json() {
 program.arguments(
     "<site.json>"
 ).option(
-    "--no-watch', 'no watching"
+    "--no-watch", "No watching"
 ).action(
     function (file) {
         SITE_JSON_NAME = path.resolve(file);
