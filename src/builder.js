@@ -43,7 +43,7 @@ const OPTIONS_MINIFY = {
 
 // Imports.
 
-const program = require('commander');
+const program = require("commander");
 const chokidar = require("chokidar");
 const fs = require("fs");
 const path = require("path");
@@ -219,16 +219,19 @@ function setup_site_json() {
 
 }
 
-program.arguments('<site.json>')
-    .option('--no-watch', 'no watching')
-    .action( function(file) {
-            SITE_JSON_NAME = path.resolve(file);
-        }
-    );
+program.arguments(
+    "<site.json>"
+).option(
+    "--no-watch', 'no watching"
+).action(
+    function (file) {
+        SITE_JSON_NAME = path.resolve(file);
+    }
+);
 
 program.parse(process.argv);
 
-if(typeof SITE_JSON_NAME === "undefined") {
+if (SITE_JSON_NAME === undefined) {
     console.log("Please input site.json.");
     console.log(program.helpInformation());
     process.exit(1);
