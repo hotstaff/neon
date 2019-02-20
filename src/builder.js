@@ -222,7 +222,8 @@ function setup_site_json() {
 program.arguments(
     "<site.json>"
 ).option(
-    "--no-watch", "No watching"
+    "--no-watch",
+    "No watching"
 ).action(
     function (file) {
         SITE_JSON_NAME = path.resolve(file);
@@ -671,7 +672,7 @@ const write_pages = function write_pages(index_json) {
             );
 
         } else {
-            console.log("Output HTML5 side menu: index.html, menu.html");
+            console.log("Output index page: index.html = top.html");
             var nav_html = construct_menu_html5(index_json);
             index_json.pages.forEach(function (page) {
                 var page_html = construct_page_html5(
@@ -736,14 +737,18 @@ const build = function build(md_file) {
         construct_index_json
     ).then(
         function onFulfilled(index_json) {
-            console.log("Pages:");
+            console.log("All pages:");
             index_json.pages.forEach(function (page) {
                 console.log(
-                    "  Source %s, title: %s, length: %s, write: %s",
+                    "    [%s] %s: \"%s\", %s Bytes",
+                    (
+                        page.write
+                        ? "✔"
+                        : " "
+                    ),
                     page.source,
                     page.title,
-                    page.contents.length,
-                    page.write
+                    Buffer.byteLength(page.contents)
                 );
             });
             return index_json;
