@@ -223,7 +223,7 @@ program.arguments(
     "<site.json>"
 ).option(
     "--no-watch",
-    "No watching"
+    "Disable event watching"
 ).option(
     "--no-exec",
     "Disable exec script"
