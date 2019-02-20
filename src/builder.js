@@ -224,6 +224,9 @@ program.arguments(
 ).option(
     "--no-watch",
     "No watching"
+).option(
+    "--no-exec",
+    "Disable exec script"
 ).action(
     function (file) {
         SITE_JSON_NAME = path.resolve(file);
@@ -715,7 +718,10 @@ const write_pages = function write_pages(index_json) {
 };
 
 const post_script = function post_script(name) {
-    return exec_script(SITE_JSON["post_" + name] || null);
+    if(program.exec) {
+        return exec_script(SITE_JSON["post_" + name] || null);
+    }
+    return true;
 };
 
 // MAIN FUNCTION END
