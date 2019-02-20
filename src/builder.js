@@ -219,7 +219,9 @@ function setup_site_json() {
 
 }
 
-program.arguments(
+program.name(
+    "neon"
+).arguments(
     "<site.json>"
 ).option(
     "--no-watch",
