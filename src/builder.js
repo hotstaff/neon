@@ -158,7 +158,7 @@ function isExistDir(dirname, creation = true) {
 
 function exec_script(command) {
     if (command !== null) {
-        console.log("Exec: " + command);
+        console.log("  Execution command: " + command);
         exec(command, function (err, stdout) {
             if (err) {
                 console.error(err);
@@ -542,12 +542,12 @@ const shrink_resource = function shrink_resource() {
             }
         ).then(
             function (image_files) {
-                console.log("Resource converted.");
+                console.log("Resource conversion completed.");
                 onFulfilled(image_files);
             }
         ).catch(
             function (err) {
-                console.log("Resource converted Error.");
+                console.log("Resource conversion failed.");
                 onRejected(err);
             }
         );
@@ -566,7 +566,7 @@ const convert_md_all = function convert_md_all() {
             }
         ).then(
             function (pages) {
-                console.log("HTML generation succeeded!(all)");
+                console.log("HTML conversion completed.");
                 pages.forEach(function (page) {
                     page.write = true;
                 });
@@ -574,7 +574,7 @@ const convert_md_all = function convert_md_all() {
             }
         ).catch(
             function (err) {
-                console.log("HTML generation Error.");
+                console.log("HTML conversion failed.");
                 onRejected(err);
             }
         );
@@ -618,12 +618,12 @@ const convert_md = function convert_md(md_file) {
             }
         ).then(
             function (pages) {
-                console.log("HTML generation succeeded!");
+                console.log("HTML conversion completed.");
                 onFulfilled(pages);
             }
         ).catch(
             function (err) {
-                console.log("HTML generation Error.");
+                console.log("HTML conversion failed.");
                 onRejected(err);
             }
         );
@@ -652,7 +652,7 @@ const write_pages = function write_pages(index_json) {
         var promises = [];
 
         if (SITE_JSON.html5 !== true) {
-            console.log("Output classic frameset: index.html, menu.html");
+            console.log("Output a classical frame menu: index.html, menu.html");
             index_json.pages.forEach(function (page) {
                 if (page.write === true) {
                     promises.push(
@@ -677,7 +677,7 @@ const write_pages = function write_pages(index_json) {
             );
 
         } else {
-            console.log("Output index page: index.html = top.html");
+            console.log("Output HTML5 navigation menu.: index.html = top.html");
             var nav_html = construct_menu_html5(index_json);
             index_json.pages.forEach(function (page) {
                 var page_html = construct_page_html5(
@@ -721,9 +721,12 @@ const write_pages = function write_pages(index_json) {
 
 const post_script = function post_script(name) {
     if(program.exec) {
-        return exec_script(SITE_JSON["post_" + name] || null);
+        if (SITE_JSON["post_" + name] !== undefined) {
+            console.log("Running scripts(post_" + name +").");
+            return exec_script(SITE_JSON["post_" + name] || null);
+        }
     }
-    return true;
+    return false;
 };
 
 // MAIN FUNCTION END
@@ -732,6 +735,7 @@ const post_script = function post_script(name) {
 
 const build = function build(md_file) {
     var start_time = Date.now();
+    console.log("Neon build process started.");
 
     Promise.resolve().then(
         shrink_resource
@@ -745,7 +749,7 @@ const build = function build(md_file) {
         construct_index_json
     ).then(
         function onFulfilled(index_json) {
-            console.log("All pages:");
+            console.log("Page Details:");
             index_json.pages.forEach(function (page) {
                 console.log(
                     "    [%s] %s: \"%s\", %s Bytes",
@@ -766,7 +770,7 @@ const build = function build(md_file) {
     ).then(
         function onFulfilled(index_json) {
             INDEX_JSON = index_json;
-            console.log("Time: " + Number(Date.now() - start_time) + " msec.");
+            console.log("The build process ended in " + Number(Date.now() - start_time) + " milliseconds.");
         }
     ).then(
         function onFulfilled() {
