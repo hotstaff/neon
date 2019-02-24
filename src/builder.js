@@ -157,13 +157,16 @@ function isExistDir(dirname, creation = true) {
 }
 
 function exec_script(command) {
+    var zero = Date.now();
     if (command !== undefined && typeof command === "string") {
-        console.log("  Execution command: " + command);
+        console.log("  Executing command: " + command);
         exec(command, function (err, stdout) {
             if (err) {
                 console.error(err);
             }
             console.log(stdout);
+            console.log("  Execution ended. Command: %s.", command);
+            console.log("  It took %d milliseconds to run.", Date.now() - zero);
         });
         return true;
     }
