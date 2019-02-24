@@ -203,7 +203,7 @@ function setup_site_json() {
 
     INDEX_JSON = undefined;
     SOURCE_DIR = path.dirname(SITE_JSON_NAME);
-    DEST_DIR = path.dirname(path.resolve(SOURCE_DIR, SITE_JSON.dest || "./"));
+    DEST_DIR = path.resolve(SOURCE_DIR, SITE_JSON.dest || "./");
 
 // Dest dir check.
 
@@ -367,10 +367,10 @@ const construct_menu_html = function construct_menu_html(index_json) {
     var atags = "";
 
     index_json.pages.forEach(function (page) {
-        if (page.source === "top.md") {
+        if (path.basename(page.source) === "top.md") {
             return;
         }
-        var link = page.source.replace(/.md/, ".html");
+        var link = path.basename(page.source).replace(/.md/, ".html");
         atags = atags + `<a href="${link}" target="top">${page.title}</a><br><br>` + "\n";
     });
 
@@ -402,10 +402,10 @@ const construct_menu_html5 = function construct_menu_html5(index_json) {
     var litags = "";
 
     index_json.pages.forEach(function (page) {
-        if (page.source === "top.md") {
+        if (path.basename(page.source) === "top.md") {
             return;
         }
-        var link = page.source.replace(/.md/, ".html");
+        var link = path.basename(page.source).replace(/.md/, ".html");
         litags = litags + `<li><a href="${link}"><i class="fa fa-file-text fa-fw"></i><span>${page.title}</span></a></li>` + "\n";
     });
 
@@ -661,7 +661,7 @@ const write_pages = function write_pages(index_json) {
                             path.resolve(
                                 DEST_DIR,
                                 path.dirname(path.relative(SOURCE_DIR, page.source)),
-                                path.basename(page.source) + ".html"
+                                path.basename(page.source, ".md") + ".html"
                             ),
                             construct_page_html(page)
                         )
@@ -690,7 +690,7 @@ const write_pages = function write_pages(index_json) {
                     nav_html
                 );
 
-                if (page.source === "top.md") {
+                if (path.basename(page.source) === "top.md") {
                     promises.push(
                         write_html(
                             path.resolve(DEST_DIR, "index.html"),
@@ -704,7 +704,7 @@ const write_pages = function write_pages(index_json) {
                             path.resolve(
                                 DEST_DIR,
                                 path.dirname(path.relative(SOURCE_DIR, page.source)),
-                                path.basename(page.source) + ".html"
+                                path.basename(page.source, ".md") + ".html"
                             ),
                             page_html
                         )
