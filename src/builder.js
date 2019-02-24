@@ -370,7 +370,7 @@ const construct_menu_html = function construct_menu_html(index_json) {
         if (path.basename(page.source) === "top.md") {
             return;
         }
-        var link = path.basename(page.source).replace(/.md/, ".html");
+        var link = path.basename(page.source, ".md") + ".html";
         atags = atags + `<a href="${link}" target="top">${page.title}</a><br><br>` + "\n";
     });
 
@@ -405,7 +405,7 @@ const construct_menu_html5 = function construct_menu_html5(index_json) {
         if (path.basename(page.source) === "top.md") {
             return;
         }
-        var link = path.basename(page.source).replace(/.md/, ".html");
+        var link = path.basename(page.source, ".md") + ".html";
         litags = litags + `<li><a href="${link}"><i class="fa fa-file-text fa-fw"></i><span>${page.title}</span></a></li>` + "\n";
     });
 
