@@ -244,13 +244,11 @@ if (SITE_JSON_NAME === undefined) {
 }
 
 console.log(`
-
 oooo   oooo ooooooooooo  ooooooo  oooo   oooo
  8888o  88   888    88 o888   888o 8888o  88
  88 888o88   888ooo8   888     888 88 888o88
  88   8888   888    oo 888o   o888 88   8888
 o88o    88  o888ooo8888  88ooo88  o88o    88
-
 `);
 
 setup_site_json();
@@ -719,13 +717,23 @@ const write_pages = function write_pages(index_json) {
     });
 };
 
-const post_script = function post_script(name) {
-    if(program.exec) {
-        if (SITE_JSON["post_" + name] !== undefined) {
-            console.log("Running scripts(post_" + name +").");
-            return exec_script(SITE_JSON["post_" + name] || null);
+const post_script = function post_script(names) {
+// post_script
+//     Execute while searching PostScript in order of priority.
+//     Always returns false if all script names are undefined in site.json.
+//     The order of the elements indicates the priority of the task to be executed.
+//     If a task to be executed is found, the result is returned and the rest are not executed.
+    if (program.exec) {
+        if (Array.isArray(names)) {
+            names.forEach(function (name) {
+                if (SITE_JSON["post_" + name] !== undefined) {
+                    console.log("Running scripts(post_" + name + ").");
+                    return exec_script(SITE_JSON["post_" + name]);
+                }
+            });
         }
     }
+
     return false;
 };
 
@@ -775,15 +783,7 @@ const build = function build(md_file) {
     ).then(
         function onFulfilled() {
             // The order means priority
-            if (post_script("all")) {
-                return;
-            }
-            if (post_script("add")) {
-                return;
-            }
-            if (post_script("edit")) {
-                return;
-            }
+            post_script(["all", "add", "edit"]);
         }
     ).catch(
         function onRejected(err) {
