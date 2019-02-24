@@ -157,7 +157,7 @@ function isExistDir(dirname, creation = true) {
 }
 
 function exec_script(command) {
-    if (command !== null) {
+    if (command !== undefined && typeof command === "string") {
         console.log("  Execution command: " + command);
         exec(command, function (err, stdout) {
             if (err) {
@@ -719,7 +719,7 @@ const write_pages = function write_pages(index_json) {
 
 const post_script = function post_script(names) {
 // post_script
-//     Execute while searching PostScript in order of priority.
+//     Execute while searching post script in order of priority.
 //     Always returns false if all script names are undefined in site.json.
 //     The order of the elements indicates the priority of the task to be executed.
 //     If a task to be executed is found, the result is returned and the rest are not executed.
