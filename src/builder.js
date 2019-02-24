@@ -203,7 +203,7 @@ function setup_site_json() {
 
     INDEX_JSON = undefined;
     SOURCE_DIR = path.dirname(SITE_JSON_NAME);
-    DEST_DIR = path.resolve(SOURCE_DIR, SITE_JSON.dest || "./");
+    DEST_DIR = path.dirname(path.resolve(SOURCE_DIR, SITE_JSON.dest || "./"));
 
 // Dest dir check.
 
@@ -435,16 +435,16 @@ ${page.contents}</main>
 
 // TEMPLETE END
 
-const convert2html = function convert2html(file) {
+const convert2html = function convert2html(file_path) {
     return new Promise(function (onFulfilled, onRejected) {
-        fs.readFile(path.resolve(SOURCE_DIR, file), "utf8", function (err, md_text) {
+        fs.readFile(file_path, "utf8", function (err, md_text) {
             var ret = {};
 
             if (err) {
                 return onRejected(err);
             }
 
-            ret.source = file;
+            ret.source = file_path;
             ret.contents = MD.render(md_text, ret);
 
             return onFulfilled(ret);
@@ -452,25 +452,25 @@ const convert2html = function convert2html(file) {
     });
 };
 
-const convert_image = function convert_image(file) {
+const convert_image = function convert_image(file_path) {
     return new Promise(function (onFulfilled, onRejected) {
-        var samnail_name = (
-            path.basename(file, path.extname(file))
-            + "_sum" + path.extname(file)
+        var samnail_basename = (
+            path.basename(file_path, path.extname(file_path))
+            + "_sum" + path.extname(file_path)
         );
-        var sumnail_path = path.resolve(SOURCE_DIR, samnail_name);
+        var sumnail_path = path.resolve(path.dirname(file_path), samnail_basename);
 
         if (isExistFile(sumnail_path)) {
-            return onFulfilled(file);
+            return onFulfilled(sumnail_path);
         }
 
-        gm(path.resolve(SOURCE_DIR, file)).resize(300).noProfile().write(
+        gm(file_path).resize(300).noProfile().write(
             sumnail_path,
             function (err) {
                 if (err) {
                     return onRejected(err);
                 }
-                return onFulfilled(file);
+                return onFulfilled(file_path);
             }
         );
     });
@@ -536,7 +536,7 @@ const shrink_resource = function shrink_resource() {
                         }
                     ).map(
                         function (file) {
-                            return convert_image(file);
+                            return convert_image(path.resolve(SOURCE_DIR, file));
                         }
                     )
                 );
@@ -561,7 +561,7 @@ const convert_md_all = function convert_md_all() {
             function (md_files) {
                 return Promise.all(
                     md_files.map(function (file) {
-                        return convert2html(file);
+                        return convert2html(path.resolve(SOURCE_DIR, file));
                     })
                 );
             }
@@ -588,7 +588,7 @@ const convert_md = function convert_md(md_file) {
     }
 
     return new Promise(function (onFulfilled, onRejected) {
-        convert2html(path.basename(md_file)).then(
+        convert2html(md_file).then(
             function (new_page) {
                 var new_pages = INDEX_JSON.pages;
                 var page_index = new_pages.findIndex(function (page) {
@@ -658,7 +658,11 @@ const write_pages = function write_pages(index_json) {
                 if (page.write === true) {
                     promises.push(
                         write_html(
-                            path.resolve(DEST_DIR, page.source.replace(/.md/, ".html")),
+                            path.resolve(
+                                DEST_DIR,
+                                path.dirname(path.relative(SOURCE_DIR, page.source)),
+                                path.basename(page.source) + ".html"
+                            ),
                             construct_page_html(page)
                         )
                     );
@@ -697,7 +701,11 @@ const write_pages = function write_pages(index_json) {
                 if (page.write === true) {
                     promises.push(
                         write_html(
-                            path.resolve(DEST_DIR, page.source.replace(/.md/, ".html")),
+                            path.resolve(
+                                DEST_DIR,
+                                path.dirname(path.relative(SOURCE_DIR, page.source)),
+                                path.basename(page.source) + ".html"
+                            ),
                             page_html
                         )
                     );
@@ -769,7 +777,7 @@ const build = function build(md_file) {
                         ? "✔"
                         : " "
                     ),
-                    page.source,
+                    path.relative(SOURCE_DIR, page.source),
                     page.title,
                     Buffer.byteLength(page.contents)
                 );
