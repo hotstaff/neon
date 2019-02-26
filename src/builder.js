@@ -185,7 +185,10 @@ function setup_site_json() {
 
     if (isExistFile(SITE_JSON_NAME) === false) {
         if (isExistDir(SITE_JSON_NAME, false) === false) {
-            console.log("Read error of site.json.\n input path -> " + SITE_JSON_NAME);
+            console.log(
+                "Read error of site.json.\n"
+                + " input path -> " + SITE_JSON_NAME
+            );
             process.exit(1);
         }
         SITE_JSON_NAME = path.resolve(SITE_JSON_NAME, "./site.json");
@@ -320,7 +323,11 @@ const link_tag = function link_tag() {
                 function (previous, css) {
                     css_path = path.resolve(SOURCE_DIR, css);
                     if (isExistFile(css_path)) {
-                        return previous + `<style>${fs.readFileSync(css_path)}</style>` + "\n";
+                        return (
+                            previous
+                            + `<style>${fs.readFileSync(css_path)}</style>`
+                            + "\n"
+                        );
                     }
                 },
                 ""
@@ -390,7 +397,12 @@ ${atags}<hr>
 };
 
 const construct_page_html = function construct_page_html(page) {
-    var head = head_tag(page.title, highlight_tag(page.contents) + (SITE_JSON.page_head || SITE_JSON.head || ""));
+    var head = (
+        head_tag(
+            page.title,
+            highlight_tag(page.contents) + (SITE_JSON.page_head || SITE_JSON.head || "")
+        )
+    );
     return `${CONST_DOCTYPE_HTML4}
 ${head}
 ${page.contents}
